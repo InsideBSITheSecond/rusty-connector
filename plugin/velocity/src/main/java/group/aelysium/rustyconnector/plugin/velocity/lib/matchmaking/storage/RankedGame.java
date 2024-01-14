@@ -1,17 +1,17 @@
 package group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.storage;
 
 import group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.storage.player_rank.RandomizedPlayerRank;
-import group.aelysium.rustyconnector.plugin.velocity.lib.players.Player;
 import group.aelysium.rustyconnector.plugin.velocity.lib.storage.StorageService;
+import group.aelysium.rustyconnector.plugin.velocity.lib.storage.card_holders.ScorecardHolder;
+import group.aelysium.rustyconnector.toolkit.core.card.Card;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.IRankedGame;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.IRankedPlayer;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.IScoreCard;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.player_rank.IPlayerRank;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
-import group.aelysium.rustyconnector.toolkit.velocity.storage.IMySQLStorageService;
+import group.aelysium.rustyconnector.toolkit.velocity.storage.IStorageService;
 import org.eclipse.serializer.collections.lazy.LazyHashMap;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,21 +20,25 @@ import java.util.UUID;
  * If, over the time of this game existing, it has ranked players based on both ELO and WIN_RATE, both of those
  * ranks are saved here and can be retrieved.
  */
-public class RankedGame implements IRankedGame {
+public class RankedGame extends Card.WithKey<String> implements IRankedGame {
     protected String name;
     protected IScoreCard.IRankSchema.Type<?> rankingSchema;
-    protected Map<UUID, ScoreCard> scorecards = new LazyHashMap<>();
+    protected ScorecardHolder scorecards = new ScorecardHolder();
 
     public RankedGame(String name, IScoreCard.IRankSchema.Type<?> schema) {
         this.name = name;
         this.rankingSchema = schema;
     }
 
+    public String key() {
+        return this.name;
+    }
+
     public String name() {
         return this.name;
     }
 
-    public IRankedPlayer rankedPlayer(IMySQLStorageService storage, UUID uuid, boolean allowNull) {
+    public IRankedPlayer rankedPlayer(IStorageService storage, UUID uuid, boolean allowNull) {
         ScoreCard scorecard = this.scorecards.get(uuid);
         if(scorecard == null)
             if(allowNull) {
@@ -51,7 +55,7 @@ public class RankedGame implements IRankedGame {
         return RankedPlayer.from(uuid, rank);
     }
 
-    public IPlayerRank<?> playerRank(IMySQLStorageService storage, IPlayer player) throws IllegalStateException {
+    public IPlayerRank<?> playerRank(IStorageService storage, IPlayer player) throws IllegalStateException {
         if(rankingSchema == IScoreCard.IRankSchema.RANDOMIZED) return new RandomizedPlayerRank();
 
         ScoreCard scorecard = this.scorecards.get(player.uuid());
@@ -84,5 +88,15 @@ public class RankedGame implements IRankedGame {
         for (ScoreCard scorecard : this.scorecards.values()) {
             scorecard.quantize(storage, this.rankingSchema);
         }
+    }
+
+    @Override
+    public boolean attributeEquals(Attribute<?> attribute) {
+        return false;
+    }
+
+    @Override
+    public Altercator<?> alter() {
+        return null;
     }
 }

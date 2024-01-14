@@ -4,16 +4,15 @@ import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.player
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.player_rank.IRandomizedPlayerRank;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.player_rank.IWinLossPlayerRank;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.player_rank.IWinRatePlayerRank;
-import group.aelysium.rustyconnector.toolkit.velocity.storage.IMySQLStorageService;
+import group.aelysium.rustyconnector.toolkit.velocity.storage.IStorageService;
 
-public interface IScoreCard<TMySQLStorageService extends IMySQLStorageService> {
+public interface IScoreCard {
     /**
      * Stores the specified rank into this scorecard.
      * This method will also store the rank into the remote storage resource.
-     * @param storage The storage resource to store in.
      * @param rank The rank to store.
      */
-    <TPlayerRank extends IPlayerRank<?>> void store(TMySQLStorageService storage, TPlayerRank rank);
+    <TPlayerRank extends IPlayerRank<?>> void store(TPlayerRank rank);
 
     /**
      * Fetches the player's current rank based on the schema provided.
@@ -22,7 +21,7 @@ public interface IScoreCard<TMySQLStorageService extends IMySQLStorageService> {
      * @return {@link TPlayerRank}
      * @throws IllegalStateException If there was a fatal exception while attempting to get the user's rank.
      */
-    <TPlayerRank extends IPlayerRank<?>> TPlayerRank fetch(TMySQLStorageService storage, IRankSchema.Type<?> schema);
+    <TPlayerRank extends IPlayerRank<?>> TPlayerRank fetch(IRankSchema.Type<?> schema);
 
     interface IRankSchema {
         Type<Class<IRandomizedPlayerRank>> RANDOMIZED = new Type<>(IRandomizedPlayerRank.class);

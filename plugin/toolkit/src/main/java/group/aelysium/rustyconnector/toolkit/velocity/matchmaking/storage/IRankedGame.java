@@ -3,7 +3,7 @@ package group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage;
 
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.player_rank.IPlayerRank;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
-import group.aelysium.rustyconnector.toolkit.velocity.storage.IMySQLStorageService;
+import group.aelysium.rustyconnector.toolkit.velocity.storage.IStorageService;
 
 import java.util.UUID;
 
@@ -19,7 +19,7 @@ public interface IRankedGame {
      * @param createNew Should this method create a new Ranked Player if one doesn't already exist.
      * @return {@link IRankedPlayer} or `null` if `createNew` is false and there isn't a RankedPlayer for the requested UUID.
      */
-    IRankedPlayer rankedPlayer(IMySQLStorageService storage, UUID uuid, boolean createNew);
+    IRankedPlayer rankedPlayer(IStorageService storage, UUID uuid, boolean createNew);
 
-    IPlayerRank<?> playerRank(IMySQLStorageService storage, IPlayer player) throws IllegalStateException;
+    IPlayerRank<?> playerRank(IStorageService storage, IPlayer player) throws IllegalStateException;
 }

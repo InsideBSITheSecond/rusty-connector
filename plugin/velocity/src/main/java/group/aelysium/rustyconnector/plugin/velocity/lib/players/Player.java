@@ -3,13 +3,17 @@ package group.aelysium.rustyconnector.plugin.velocity.lib.players;
 import group.aelysium.rustyconnector.plugin.velocity.lib.server.MCLoader;
 import group.aelysium.rustyconnector.plugin.velocity.lib.storage.StorageService;
 import group.aelysium.rustyconnector.plugin.velocity.central.Tinder;
+import group.aelysium.rustyconnector.plugin.velocity.lib.storage.card_holders.PlayerHolder;
+import group.aelysium.rustyconnector.toolkit.core.card.Card;
+import group.aelysium.rustyconnector.toolkit.core.card.CardController;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.IRankedPlayer;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class Player implements IPlayer {
+public class Player extends Card.WithKey<UUID> implements IPlayer {
     protected UUID uuid;
     protected String username;
     protected long firstLogin;
@@ -20,31 +24,67 @@ public class Player implements IPlayer {
         this.username = username;
     }
 
-    public UUID uuid() { return this.uuid; }
-    public String username() { return this.username; }
+    public UUID uuid() {
+        this.catchIllegalCall();
+
+        return this.uuid;
+    }
+    public String username() {
+        this.catchIllegalCall();
+
+        return this.username;
+    }
+
+    @Override
+    public boolean attributeEquals(Attribute<?> attribute) {
+        this.catchIllegalCall();
+
+        return switch (attribute.name()) {
+            case "uuid" -> this.uuid.equals(attribute.attribute());
+            case "username" -> this.username.equals(attribute.attribute());
+            default -> false;
+        };
+    }
+
+    @Override
+    public UUID key() {
+        this.catchIllegalCall();
+
+        return this.uuid;
+    }
 
     public void sendMessage(Component message) {
+        this.catchIllegalCall();
+
         try {
             this.resolve().orElseThrow().sendMessage(message);
         } catch (Exception ignore) {}
     }
 
     public void disconnect(Component reason) {
+        this.catchIllegalCall();
+
         try {
             this.resolve().orElseThrow().disconnect(reason);
         } catch (Exception ignore) {}
     }
 
     public Optional<com.velocitypowered.api.proxy.Player> resolve() {
+        this.catchIllegalCall();
+
         return Tinder.get().velocityServer().getPlayer(this.uuid);
     }
 
     @Override
     public boolean online() {
+        this.catchIllegalCall();
+
         return resolve().isPresent();
     }
 
     public Optional<MCLoader> server() {
+        this.catchIllegalCall();
+
         try {
             com.velocitypowered.api.proxy.Player resolvedPlayer = this.resolve().orElseThrow();
             UUID mcLoaderUUID = UUID.fromString(resolvedPlayer.getCurrentServer().orElseThrow().getServerInfo().getName());
@@ -57,6 +97,8 @@ public class Player implements IPlayer {
     }
 
     public Optional<IRankedPlayer> rank(String gamemode) {
+        this.catchIllegalCall();
+
         StorageService storage = Tinder.get().services().storage();
         try {
             return Optional.of(storage.database().getGame(gamemode).orElseThrow().rankedPlayer(storage, this.uuid, false));
@@ -66,6 +108,8 @@ public class Player implements IPlayer {
 
     @Override
     public boolean equals(Object object) {
+        this.catchIllegalCall();
+
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
 
@@ -75,67 +119,50 @@ public class Player implements IPlayer {
 
     @Override
     public String toString() {
+        this.catchIllegalCall();
+
         return "<Player uuid="+this.uuid.toString()+" username="+this.username+">";
     }
 
-    /**
-     * Fetches a RustyConnector player from the provided Velocity player.
-     * If no player is stored in storage, the player will be stored.
-     * If a player was already stored in the storage, that player will be returned.
-     *
-     * This method will also update the player's username if it has been changed.
-     * @param velocityPlayer The player to fetch.
-     * @return {@link Player}
-     */
-    public static Player from(com.velocitypowered.api.proxy.Player velocityPlayer) {
-        // If player doesn't exist, we need to make one and store it.
-        StorageService storageService = Tinder.get().services().storage();
+    @Override
+    public Altercator alter() {
+        this.catchIllegalCall();
 
-        try {
-            Player player = new Reference(velocityPlayer.getUniqueId()).get();
-            if(!player.username().equals(velocityPlayer.getUsername())) {
-                player.username = velocityPlayer.getUsername();
-                storageService.store(player);
-                return player;
-            }
-        } catch (Exception ignore) {}
-
-        Player player = new Player(velocityPlayer.getUniqueId(), velocityPlayer.getUsername());
-
-        storageService.database().savePlayer(storageService, player);
-
-        return player;
+        return new Altercator(this);
     }
 
-    public static class Shard implements IShard {
-        protected UUID uuid;
-        protected String username;
 
-        protected Shard(UUID uuid, String username) {
-            this.uuid = uuid;
-            this.username = username;
+    public static class Builder extends CardController.Create.Creator<Player> {
+        private UUID uuid;
+        private String username;
+
+        public Builder(PlayerHolder owner) {
+            super(owner);
         }
 
-        public UUID uuid() { return this.uuid; }
-        public String username() { return this.username; }
+        public Builder uuid(UUID uuid) {
+            this.uuid = uuid;
+            return this;
+        }
 
-        public Player storeAndGet() {
-            // If player doesn't exist, we need to make one and store it.
-            StorageService storageService = Tinder.get().services().storage();
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
 
-            try {
-                Player player = new Reference(this.uuid).get();
-                if(!player.username().equals(this.username)) {
-                    player.username = this.username;
-                    storageService.store(player);
-                    return player;
-                }
-            } catch (Exception ignore) {}
-            Player player = new Player(this.uuid, this.username);
+        @Override
+        public ReadyForInsert<Player> prepare() {
+            return new ReadyForInsert<>(this.owner, new Player(this.uuid, this.username));
+        }
+    }
+    public static class Altercator extends CardController.Alter.Altercator<Player> {
+        protected Altercator(@NotNull Player card) {
+            super(card);
+        }
 
-            storageService.database().savePlayer(storageService, player);
-
-            return player;
+        public Altercator username(String username) {
+            this.card.username = username;
+            return this;
         }
     }
 }

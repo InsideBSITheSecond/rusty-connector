@@ -1,6 +1,6 @@
 package group.aelysium.rustyconnector.plugin.velocity.lib.storage;
 
-import group.aelysium.rustyconnector.toolkit.velocity.storage.IMySQLStorageService;
+import group.aelysium.rustyconnector.toolkit.velocity.storage.IStorageService;
 import group.aelysium.rustyconnector.toolkit.core.UserPass;
 import org.eclipse.serializer.afs.types.AFileSystem;
 import org.eclipse.store.afs.nio.types.NioFileSystem;
@@ -10,15 +10,12 @@ import org.eclipse.store.afs.sql.types.SqlProviderMariaDb;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorage;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
 import org.eclipse.store.storage.restservice.sparkjava.types.StorageRestServiceSparkJava;
-import org.eclipse.store.storage.restservice.types.StorageRestService;
-import org.eclipse.store.storage.restservice.types.StorageRestServiceResolver;
 import org.mariadb.jdbc.MariaDbDataSource;
-import spark.Service;
 
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
 
-public class StorageService implements IMySQLStorageService {
+public class StorageService implements IStorageService {
     protected final StorageConfiguration configuration;
     protected final EmbeddedStorageManager storageManager;
     protected StorageRestServiceSparkJava restService;

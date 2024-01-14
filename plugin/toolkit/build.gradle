@@ -7,6 +7,8 @@ dependencies {
     shadow "com.google.code.gson:gson:${project.gson_version}"
     implementation "com.velocitypowered:velocity-api:${project.velocity_version}"
     implementation "net.engio:mbassador:${project.mbassador_version}"
+
+    implementation "org.eclipse.store:storage-embedded:${project.eclipsestore_version}"
 }
 
 // If ever strange behaviour check the docs for reference: https://imperceptiblethoughts.com/shadow/

@@ -8,7 +8,7 @@ import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.IRanke
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.IRankedPlayer;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.storage.IScoreCard;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
-import group.aelysium.rustyconnector.toolkit.velocity.storage.IMySQLStorageService;
+import group.aelysium.rustyconnector.toolkit.velocity.storage.IStorageService;
 import group.aelysium.rustyconnector.toolkit.velocity.util.LiquidTimestamp;
 
 import java.util.List;
@@ -73,7 +73,7 @@ public interface IMatchmaker extends Service {
     void remove(ISession session);
 
     record Settings (
-            IMySQLStorageService storage,
+            IStorageService storage,
             IScoreCard.IRankSchema.Type<?> algorithm,
             IRankedGame game,
             int min,

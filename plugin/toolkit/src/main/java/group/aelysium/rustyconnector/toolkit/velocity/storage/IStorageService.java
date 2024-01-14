@@ -3,17 +3,17 @@ package group.aelysium.rustyconnector.toolkit.velocity.storage;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.interfaces.Service;
 
 /**
- * {@link IMySQLStorageService} implements MicroStream storage connector architecture to dynamically make database requests as you look for data via the RustyConnector Java API.
- * Simply fetch {@link IMySQLStorageService#database()} and use any of the available methods to fetch the data you need!
- * To store new data to the database, use {@link IMySQLStorageService#store(Object)}.
+ * {@link IStorageService} implements MicroStream storage connector architecture to dynamically make database requests as you look for data via the RustyConnector Java API.
+ * Simply fetch {@link IStorageService#database()} and use any of the available methods to fetch the data you need!
+ * To store new data to the database, use {@link IStorageService#store(Object)}.
  */
-public interface IMySQLStorageService extends Service {
+public interface IStorageService extends Service {
     /**
-     * Gets the {@link IStorageRoot}. With it, you can access the entire RustyConnector database dataset.
-     * Read the {@link IMySQLStorageService} Javadoc for more details.
-     * @return {@link IStorageRoot}
+     * Gets the {@link IDatabase}. With it, you can access the entire RustyConnector database dataset.
+     * Read the {@link IStorageService} Javadoc for more details.
+     * @return {@link IDatabase}
      */
-    IStorageRoot database();
+    IDatabase database();
 
     /**
      * Convenience method to store the passed object synchronously.

@@ -3,7 +3,7 @@ package group.aelysium.rustyconnector.plugin.velocity.lib.friends;
 import group.aelysium.rustyconnector.toolkit.velocity.friends.IFriendsDataEnclave;
 import group.aelysium.rustyconnector.toolkit.velocity.friends.PlayerPair;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
-import group.aelysium.rustyconnector.toolkit.velocity.storage.IMySQLStorageService;
+import group.aelysium.rustyconnector.toolkit.velocity.storage.IStorageService;
 import group.aelysium.rustyconnector.plugin.velocity.lib.storage.StorageService;
 import group.aelysium.rustyconnector.plugin.velocity.lib.storage.Database;
 
@@ -12,7 +12,7 @@ import java.util.*;
 public class FriendsDataEnclave implements IFriendsDataEnclave {
     private final StorageService storage;
 
-    public FriendsDataEnclave(IMySQLStorageService storage) {
+    public FriendsDataEnclave(IStorageService storage) {
         this.storage = (StorageService) storage;
     }
 
