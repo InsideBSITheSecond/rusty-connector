@@ -11,13 +11,13 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public abstract class Card implements CardController.Alter, CardController.Delete {
-    private boolean deleted = false;
+public abstract class Card implements CardController.Delete {
+    private transient boolean deleted = false;
     private transient Persister persister;
     /**
      * Gets the parent {@link Holder} of the Card.
      */
-    public final Holder<Card> parent() {
+    public Holder<Card> parent() {
         return (Holder<Card>) this.persister;
     }
 

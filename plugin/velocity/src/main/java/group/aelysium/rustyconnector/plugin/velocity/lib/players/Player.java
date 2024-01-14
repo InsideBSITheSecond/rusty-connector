@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class Player extends Card.WithKey<UUID> implements IPlayer {
+public class Player extends Card.WithKey<UUID> implements IPlayer, CardController.Alter {
     protected UUID uuid;
     protected String username;
     protected long firstLogin;
