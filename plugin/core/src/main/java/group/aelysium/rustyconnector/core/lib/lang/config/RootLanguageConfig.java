@@ -14,7 +14,7 @@ import java.nio.file.Path;
 
 public class RootLanguageConfig extends YAML {
     protected RootLanguageConfig(Path dataFolder) {
-        super(dataFolder, "language.yml", "language");
+        super(dataFolder, "metadata/language.yml", "language");
     }
 
     protected String language;

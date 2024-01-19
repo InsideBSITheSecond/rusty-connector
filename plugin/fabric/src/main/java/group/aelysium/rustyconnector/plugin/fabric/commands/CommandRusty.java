@@ -9,7 +9,6 @@ import cloud.commandframework.arguments.standard.StringArgument;
 import cloud.commandframework.context.CommandContext;
 import cloud.commandframework.fabric.FabricServerCommandManager;
 import group.aelysium.rustyconnector.core.TinderAdapterForCore;
-import group.aelysium.rustyconnector.core.lib.lang.Lang;
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
 import group.aelysium.rustyconnector.core.lib.packets.MCLoader;
 import group.aelysium.rustyconnector.toolkit.core.logger.PluginLogger;
@@ -18,7 +17,6 @@ import group.aelysium.rustyconnector.core.lib.cache.MessageCacheService;
 import group.aelysium.rustyconnector.core.mcloader.lib.lang.MCLoaderLang;
 import group.aelysium.rustyconnector.plugin.fabric.central.Tinder;
 import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
 import group.aelysium.rustyconnector.core.lib.packets.SendPlayerPacket;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -144,7 +142,7 @@ public final class CommandRusty {
 
                         Packet message = api.services().packetBuilder().newBuilder()
                                 .identification(BuiltInIdentifications.SEND_PLAYER)
-                                .sendingToProxy()
+                                .sendingToAnyProxy()
                                 .parameter(SendPlayerPacket.Parameters.TARGET_FAMILY_NAME, familyName)
                                 .parameter(SendPlayerPacket.Parameters.PLAYER_UUID, playerUUID.toString())
                                 .build();

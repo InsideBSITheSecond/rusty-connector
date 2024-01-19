@@ -43,7 +43,7 @@ public class MagicLinkService implements IMagicLinkService {
             try {
                 Packet packet = api.services().packetBuilder().newBuilder()
                         .identification(BuiltInIdentifications.MAGICLINK_HANDSHAKE_PING)
-                        .sendingToProxy()
+                        .sendingToAnyProxy()
                         .parameter(MagicLink.Handshake.Ping.Parameters.ADDRESS, serverInfoService.address())
                         .parameter(MagicLink.Handshake.Ping.Parameters.DISPLAY_NAME, serverInfoService.displayName())
                         .parameter(MagicLink.Handshake.Ping.Parameters.MAGIC_CONFIG_NAME, serverInfoService.magicConfig())
@@ -80,7 +80,7 @@ public class MagicLinkService implements IMagicLinkService {
 
             Packet packet = api.services().packetBuilder().newBuilder()
                     .identification(BuiltInIdentifications.MAGICLINK_HANDSHAKE_DISCONNECT)
-                    .sendingToProxy()
+                    .sendingToAnyProxy()
                     .build();
             this.connection().orElseThrow().publish(packet);
 
