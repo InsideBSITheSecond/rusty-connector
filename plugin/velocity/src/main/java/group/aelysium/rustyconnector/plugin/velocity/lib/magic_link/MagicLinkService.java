@@ -1,22 +1,15 @@
 package group.aelysium.rustyconnector.plugin.velocity.lib.magic_link;
 
-import group.aelysium.rustyconnector.core.lib.data_transit.DataTransitService;
 import group.aelysium.rustyconnector.core.lib.messenger.MessengerConnection;
 import group.aelysium.rustyconnector.core.lib.messenger.MessengerConnector;
-import group.aelysium.rustyconnector.core.lib.messenger.implementors.redis.RedisConnection;
-import group.aelysium.rustyconnector.core.lib.messenger.implementors.redis.RedisConnector;
 import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnection;
 import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnector;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.ClockService;
-import group.aelysium.rustyconnector.plugin.velocity.lib.server.MCLoader;
 import group.aelysium.rustyconnector.plugin.velocity.lib.server.ServerService;
 import group.aelysium.rustyconnector.toolkit.velocity.magic_link.IMagicLink;
 
 import java.net.ConnectException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class MagicLinkService extends ClockService implements IMagicLink {
     protected final long interval;

@@ -121,53 +121,54 @@ public final class Packet implements JSONParseable {
             this.builder = new NakedBuilder();
         }
 
-        public static class ReadyForTargetingAssignment {
+        public static class ReadyForSending {
             private final IMCLoaderFlame<? extends ICoreServiceHandler> flame;
             private final NakedBuilder builder;
 
-            protected ReadyForTargetingAssignment(IMCLoaderFlame<? extends ICoreServiceHandler> flame, NakedBuilder builder) {
+            protected ReadyForSending(IMCLoaderFlame<? extends ICoreServiceHandler> flame, NakedBuilder builder) {
                 this.flame = flame;
                 this.builder = builder;
             }
 
-            /**
-             * Packet is being sent from an MCLoader to the Proxy.
-             */
-            public ReadyForParameters sendingToProxy() {
-                this.builder.sender(Node.mcLoader(flame.services().serverInfo().uuid()));
-                this.builder.target(Node.unknownProxy());
-                return new ReadyForParameters(builder);
-            }
-
-            /**
-             * Packet is being sent from one MCLoader to another MCLoader
-             * @param targetMCLoader The UUID of the MCLoader that the packet is being sent to.
-             */
-            public ReadyForParameters sendingToAnotherMCLoader(UUID targetMCLoader) {
-                this.builder.sender(Node.mcLoader(flame.services().serverInfo().uuid()));
-                this.builder.target(Node.mcLoader(targetMCLoader));
-                return new ReadyForParameters(builder);
-            }
-        }
-        public static class ReadyForParameters {
-            private final NakedBuilder builder;
-
-            protected ReadyForParameters(NakedBuilder builder) {
-                this.builder = builder;
-            }
-
-            public ReadyForParameters parameter(String key, String value) {
+            public ReadyForSending parameter(String key, String value) {
                 this.builder.parameter(key, new PacketParameter(value));
                 return this;
             }
 
-            public ReadyForParameters parameter(String key, PacketParameter value) {
+            public ReadyForSending parameter(String key, PacketParameter value) {
                 this.builder.parameter(key, value);
                 return this;
             }
 
-            public Packet build() {
-                return this.builder.build();
+            /**
+             * Sends the packet from an MCLoader to any Proxies that are listening.
+             */
+            public void sendToAnyProxy() {
+                this.builder.sender(Node.mcLoader(flame.services().serverInfo().uuid()));
+                this.builder.target(Node.unknownProxy());
+                Packet packet = this.builder.build();
+                flame.services().magicLink().connection().orElseThrow().publish(packet);
+            }
+
+            /**
+             * Sends the packet from an MCLoader to the Proxy.
+             */
+            public void sendToProxy(UUID uuid) {
+                this.builder.sender(Node.mcLoader(flame.services().serverInfo().uuid()));
+                this.builder.target(Node.proxy(uuid));
+                Packet packet = this.builder.build();
+                flame.services().magicLink().connection().orElseThrow().publish(packet);
+            }
+
+            /**
+             * Sends the packet from one MCLoader to another MCLoader
+             * @param targetProxy The UUID of the Proxy that the packet is being sent to.
+             */
+            public void sendToAnotherMCLoader(UUID targetProxy) {
+                this.builder.sender(Node.mcLoader(flame.services().serverInfo().uuid()));
+                this.builder.target(Node.mcLoader(targetProxy));
+                Packet packet = this.builder.build();
+                flame.services().magicLink().connection().orElseThrow().publish(packet);
             }
         }
 
@@ -175,8 +176,8 @@ public final class Packet implements JSONParseable {
          * The identification of this packet.
          * Identification is what differentiates a "Server ping packet" from a "Teleport player packet"
          */
-        public ReadyForTargetingAssignment identification(PacketIdentification id) {
-            return new ReadyForTargetingAssignment(flame, builder.identification(id));
+        public ReadyForSending identification(PacketIdentification id) {
+            return new ReadyForSending(flame, builder.identification(id));
         }
     }
     public static class ProxyPacketBuilder {
@@ -188,44 +189,46 @@ public final class Packet implements JSONParseable {
             this.builder = new NakedBuilder();
         }
 
-        public static class ReadyForTargetingAssignment {
+        public static class ReadyForSending {
             private final VelocityFlame<? extends group.aelysium.rustyconnector.toolkit.velocity.central.ICoreServiceHandler> flame;
             private final NakedBuilder builder;
 
-            protected ReadyForTargetingAssignment(VelocityFlame<? extends group.aelysium.rustyconnector.toolkit.velocity.central.ICoreServiceHandler> flame, NakedBuilder builder) {
+            protected ReadyForSending(VelocityFlame<? extends group.aelysium.rustyconnector.toolkit.velocity.central.ICoreServiceHandler> flame, NakedBuilder builder) {
                 this.flame = flame;
                 this.builder = builder;
             }
 
-            /**
-             * Packet is being sent from the Proxy to an MCLoader
-             * @param targetMCLoader The UUID of the MCLoader that the packet is being sent to.
-             */
-            public ReadyForParameters sendingToMCLoader(UUID targetMCLoader) {
-                this.builder.sender(Node.proxy(flame.uuid()));
-                this.builder.target(Node.mcLoader(targetMCLoader));
-                return new ReadyForParameters(builder);
-            }
-        }
-
-        public static class ReadyForParameters {
-            private final NakedBuilder builder;
-
-            protected ReadyForParameters(NakedBuilder builder) {
-                this.builder = builder;
-            }
-
-            public ReadyForParameters parameter(String key, String value) {
+            public ReadyForSending parameter(String key, String value) {
                 this.builder.parameter(key, new PacketParameter(value));
                 return this;
             }
-            public ReadyForParameters parameter(String key, PacketParameter value) {
+            public ReadyForSending parameter(String key, PacketParameter value) {
                 this.builder.parameter(key, value);
                 return this;
             }
 
-            public Packet build() {
-                return this.builder.build();
+            /**
+             * Sends the packet to an MCLoader
+             * @param targetMCLoader The UUID of the MCLoader that the packet is being sent to.
+             */
+            public void sendToMCLoader(UUID targetMCLoader) {
+                this.builder.sender(Node.proxy(flame.uuid()));
+                this.builder.target(Node.mcLoader(targetMCLoader));
+
+                Packet packet = this.builder.build();
+                flame.services().magicLink().connection().orElseThrow().publish(packet);
+            }
+
+            /**
+             * Sends the packet from the Proxy to an MCLoader
+             * @param targetProxy The UUID of the Proxy that the packet is being sent to.
+             */
+            public void sendToAnotherProxy(UUID targetProxy) {
+                this.builder.sender(Node.proxy(flame.uuid()));
+                this.builder.target(Node.proxy(targetProxy));
+
+                Packet packet = this.builder.build();
+                flame.services().magicLink().connection().orElseThrow().publish(packet);
             }
         }
 
@@ -233,8 +236,8 @@ public final class Packet implements JSONParseable {
          * The identification of this packet.
          * Identification is what differentiates a "Server ping packet" from a "Teleport player packet"
          */
-        public ReadyForTargetingAssignment identification(PacketIdentification id) {
-            return new ReadyForTargetingAssignment(this.flame, this.builder.identification(id));
+        public ReadyForSending identification(PacketIdentification id) {
+            return new ReadyForSending(this.flame, this.builder.identification(id));
         }
     }
     public static class ReplyPacketBuilder {
@@ -327,7 +330,7 @@ public final class Packet implements JSONParseable {
         private final UUID uuid;
         private final Origin origin;
 
-        private Node(UUID uuid, Origin origin) {
+        private Node(@NotNull UUID uuid, @NotNull Origin origin) {
             this.uuid = uuid;
             this.origin = origin;
         }
@@ -342,22 +345,15 @@ public final class Packet implements JSONParseable {
         public JsonObject toJSON() {
             JsonObject object = new JsonObject();
 
-            if(this.uuid == null)
-                object.add("u", new JsonPrimitive(""));
-            else
-                object.add("u", new JsonPrimitive(this.uuid.toString()));
+            object.add("u", new JsonPrimitive(this.uuid.toString()));
             object.add("n", new JsonPrimitive(Origin.toInteger(this.origin)));
 
             return object;
         }
 
         public static Node fromJSON(JsonObject object) {
-            UUID uuid = null;
-            if(!object.get("u").getAsString().isEmpty())
-                uuid = UUID.fromString(object.get("u").getAsString());
-
             return new Node(
-                    uuid,
+                    UUID.fromString(object.get("u").getAsString()),
                     Origin.fromInteger(object.get("n").getAsInt())
             );
         }

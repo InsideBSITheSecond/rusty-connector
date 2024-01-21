@@ -4,6 +4,7 @@ import com.velocitypowered.api.command.CommandManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.velocitypowered.api.event.EventManager;
+import group.aelysium.rustyconnector.core.lib.key.config.UUIDConfig;
 import group.aelysium.rustyconnector.plugin.velocity.event_handlers.rc.*;
 import group.aelysium.rustyconnector.plugin.velocity.lib.config.ConfigService;
 import group.aelysium.rustyconnector.plugin.velocity.lib.config.configs.*;
@@ -123,7 +124,8 @@ public class Flame extends VelocityFlame<CoreServiceHandler> {
         logger.send(Component.text("Initializing 0%...", NamedTextColor.DARK_GRAY));
 
         try {
-            UUID uuid = UUID.randomUUID();
+            UUID uuid = initialize.systemUUID();
+            System.out.println(uuid);
             String version = initialize.version();
             ConfigService configService = initialize.configService();
             AESCryptor cryptor = initialize.privateKey();
@@ -265,8 +267,12 @@ class Initialize {
         }
     }
 
+    public UUID systemUUID() {
+        return new UUIDConfig(new File(api.dataFolder().toString(), "metadata/system.uuid")).get(bootOutput);
+    }
+
     public AESCryptor privateKey() {
-        PrivateKeyConfig config = new PrivateKeyConfig(new File(String.valueOf(api.dataFolder()), "private.key"));
+        PrivateKeyConfig config = new PrivateKeyConfig(new File(String.valueOf(api.dataFolder()), "metadata/private.key"));
         try {
             return config.get(bootOutput);
         } catch (Exception e) {
@@ -275,7 +281,7 @@ class Initialize {
     }
 
     public Optional<char[]> memberKey() {
-        MemberKeyConfig config = new MemberKeyConfig(new File(String.valueOf(api.dataFolder()), "member.key"));
+        MemberKeyConfig config = new MemberKeyConfig(new File(String.valueOf(api.dataFolder()), "metadata/member.key"));
         if (!config.generateFilestream(bootOutput))
             throw new IllegalStateException("Unable to load or create private.key!");
 

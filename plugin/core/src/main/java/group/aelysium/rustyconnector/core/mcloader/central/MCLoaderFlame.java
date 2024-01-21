@@ -3,6 +3,7 @@ package group.aelysium.rustyconnector.core.mcloader.central;
 import group.aelysium.rustyconnector.core.lib.cache.MessageCacheService;
 import group.aelysium.rustyconnector.core.lib.crypt.AESCryptor;
 import group.aelysium.rustyconnector.core.lib.key.config.PrivateKeyConfig;
+import group.aelysium.rustyconnector.core.lib.key.config.UUIDConfig;
 import group.aelysium.rustyconnector.core.lib.lang.LangService;
 import group.aelysium.rustyconnector.core.mcloader.central.config.ConnectorsConfig;
 import group.aelysium.rustyconnector.core.lib.messenger.implementors.redis.RedisConnection;
@@ -62,11 +63,13 @@ public class MCLoaderFlame extends ServiceableService<CoreServiceHandler> implem
         Initialize initialize = new Initialize(api);
 
         try {
+            UUID uuid = initialize.systemUUID();
+            System.out.println(uuid);
             String version = initialize.version();
             int configVersion = initialize.configVersion();
             AESCryptor cryptor = initialize.privateKey();
             DefaultConfig defaultConfig = initialize.defaultConfig(langService);
-            ServerInfoService serverInfoService = initialize.serverInfo(defaultConfig, port);
+            ServerInfoService serverInfoService = initialize.serverInfo(defaultConfig, port, uuid);
 
             MessageCacheService messageCacheService = initialize.messageCache();
             RedisConnector messenger = initialize.connectors(cryptor, messageCacheService, logger, langService, serverInfoService.uuid());
@@ -151,8 +154,12 @@ class Initialize {
         }
     }
 
+    public UUID systemUUID() {
+        return new UUIDConfig(new File(api.dataFolder(), "metadata/system.uuid")).get(bootOutput);
+    }
+
     public AESCryptor privateKey() {
-        PrivateKeyConfig privateKeyConfig = new PrivateKeyConfig(new File(api.dataFolder(), "private.key"));
+        PrivateKeyConfig privateKeyConfig = new PrivateKeyConfig(new File(api.dataFolder(), "metadata/private.key"));
         try {
             return privateKeyConfig.get(bootOutput);
         } catch (Exception e) {
@@ -207,8 +214,9 @@ class Initialize {
         return service;
     }
 
-    public ServerInfoService serverInfo(DefaultConfig defaultConfig, int port) {
+    public ServerInfoService serverInfo(DefaultConfig defaultConfig, int port, UUID uuid) {
         ServerInfoService serverInfoService = new ServerInfoService(
+                uuid,
                 defaultConfig.address(),
                 defaultConfig.displayName(),
                 defaultConfig.magicConfig(),

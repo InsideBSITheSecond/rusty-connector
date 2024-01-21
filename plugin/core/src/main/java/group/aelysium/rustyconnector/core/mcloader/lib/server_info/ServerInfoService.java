@@ -17,13 +17,14 @@ import java.util.Enumeration;
 import java.util.UUID;
 
 public class ServerInfoService implements IServerInfoService {
-    private final UUID uuid = UUID.randomUUID();
+    private final UUID uuid;
     private final String displayName;
     private final InetSocketAddress address;
     private final String magicConfigPointer;
     private ServerAssignment assignment = ServerAssignment.GENERIC;
 
-    public ServerInfoService(@NotNull String address, @NotNull String displayName, @NotNull String magicConfigPointer, int port) {
+    public ServerInfoService(@NotNull UUID uuid, @NotNull String address, @NotNull String displayName, @NotNull String magicConfigPointer, int port) {
+        this.uuid = uuid;
         this.magicConfigPointer = magicConfigPointer;
         this.displayName = displayName;
 
