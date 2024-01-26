@@ -11,6 +11,8 @@ dependencies {
     implementation "org.eclipse.store:afs-sql:${project.eclipsestore_sql_version}"
     implementation "org.mariadb.jdbc:mariadb-java-client:${project.mariadb_version}"
 
+    implementation "cloud.commandframework:cloud-velocity:${project.cloud_version}"
+
     implementation "io.fabric8:kubernetes-client:${project.kubernetes_version}"
 
     implementation 'org.bstats:bstats-velocity:3.0.2'

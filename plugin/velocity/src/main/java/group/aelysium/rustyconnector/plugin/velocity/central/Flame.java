@@ -64,6 +64,7 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.whitelist.Whitelist;
 import group.aelysium.rustyconnector.plugin.velocity.lib.whitelist.WhitelistService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.incendo.cloud.annotations.AnnotationParser;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -239,6 +240,8 @@ class Initialize {
 
     public void commands(DependencyInjector.DI3<Flame, PluginLogger, MessageCacheService> dependencies) {
         CommandManager commandManager = api.velocityServer().getCommandManager();
+
+        AnnotationParser<C> annotationParser = new AnnotationParser(commandManager);
 
         commandManager.register(
                 commandManager.metaBuilder("rc")
