@@ -20,21 +20,22 @@ public final class Packet implements JSONParseable {
     private final PacketIdentification identification;
     private final Packet.Node sender;
     private final Packet.Node target;
+    private final Response response;
     private final Map<String, PacketParameter> parameters;
+    private final CompletableFuture<Packet> reply = new CompletableFuture<>();
 
     public int messageVersion() { return this.messageVersion; }
     public Packet.Node sender() { return this.sender; }
     public Packet.Node target() { return this.target; }
+    protected Response response() { return this.response; }
     public PacketIdentification identification() { return this.identification; }
     public Map<String, PacketParameter> parameters() { return parameters; }
 
     /**
-     * A convenience method that lets you build a reply packet that will reply to a packet you've received.
-     * The act of "replying" is simply marking the `.sender()` of the previous packet as this packet's `.target()`
-     * and marking the `.target()` of the previous packet as this packet's `.sender()`.
+     * Returns the packet which was sent as a reply to this one.
      */
-    public ReplyPacketBuilder reply() {
-        return new ReplyPacketBuilder(this);
+    public CompletableFuture<Packet> reply() {
+        return this.reply;
     }
 
     public Packet(@NotNull Integer version, @NotNull PacketIdentification identification, @NotNull Packet.Node sender, @NotNull Packet.Node target, @NotNull Map<String, PacketParameter> parameters) {
@@ -75,6 +76,7 @@ public final class Packet implements JSONParseable {
         private PacketIdentification id;
         private Packet.Node sender;
         private Packet.Node target;
+        private Response response = Response.chainStart();
         private final Map<String, PacketParameter> parameters = new HashMap<>();
 
         public NakedBuilder identification(@NotNull PacketIdentification id) {
@@ -89,6 +91,11 @@ public final class Packet implements JSONParseable {
 
         public NakedBuilder target(@NotNull Packet.Node target) {
             this.target = target;
+            return this;
+        }
+
+        public NakedBuilder replyTo(@NotNull Response response) {
+            this.response = Response.replyTo(response.ownTarget());
             return this;
         }
 
@@ -170,6 +177,15 @@ public final class Packet implements JSONParseable {
                 Packet packet = this.builder.build();
                 flame.services().magicLink().connection().orElseThrow().publish(packet);
             }
+
+            public void replyTo(Packet packet) {
+                this.builder.sender(packet.target());
+                this.builder.target(packet.sender());
+                this.builder.replyTo(packet.reponse());
+
+                Packet packet = this.builder.build()
+                flame.services().magicLink().connection().orElseThrow().publish(packet);
+            }
         }
 
         /**
@@ -230,6 +246,16 @@ public final class Packet implements JSONParseable {
                 Packet packet = this.builder.build();
                 flame.services().magicLink().connection().orElseThrow().publish(packet);
             }
+
+            public void replyTo(Packet packet) {
+                this.builder.sender(packet.target());
+                this.builder.target(packet.sender());
+                this.builder.replyTo(packet.response());
+
+                Packet packet = this.builder.build();
+                flame.services().magicLink().connection().orElseThrow().publish(packet);
+            }
+
         }
 
         /**
@@ -428,6 +454,34 @@ public final class Packet implements JSONParseable {
                     case ANY_MCLOADER -> 3;
                 };
             }
+        }
+    }
+
+    public static class Response {
+        private final UUID ownTarget = UUID.randomUUID();
+        private final UUID remoteTarget;
+
+        private Response() {
+            this.arrow = null;
+        }
+        private Response(UUID remoteTarget) {
+            this();
+            this.arrow = arrow;
+        }
+
+        public UUID ownTarget() {
+            return this.ownTarget;
+        }
+        public Optional<UUID> remoteTarget() {
+            if(this.remoteTarget == null) return Optional.empty();
+            return Optional.of(this.remoteTarget);
+        }
+
+        public static Response chainStart() {
+            return new Response();
+        }
+        public static Response respondTo(UUID remoteTarget) {
+            return new Response(remoteTarget);
         }
     }
 
