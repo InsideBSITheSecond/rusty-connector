@@ -63,6 +63,7 @@ public final class Packet implements JSONParseable {
         object.add(Parameters.IDENTIFICATION, new JsonPrimitive(this.identification.toString()));
         object.add(Parameters.SENDER, this.sender.toJSON());
         object.add(Parameters.TARGET, this.target.toJSON());
+        object.add(Parameters.RESPONSE, this.response.toJSON());
 
         JsonObject parameters = new JsonObject();
         this.parameters.forEach((key, value) -> parameters.add(key, value.toJSON()));
@@ -94,8 +95,8 @@ public final class Packet implements JSONParseable {
             return this;
         }
 
-        public NakedBuilder replyTo(@NotNull Response response) {
-            this.response = Response.replyTo(response.ownTarget());
+        public NakedBuilder response(@NotNull Response response) {
+            this.response = response;
             return this;
         }
 
@@ -181,7 +182,7 @@ public final class Packet implements JSONParseable {
             public void replyTo(Packet packet) {
                 this.builder.sender(packet.target());
                 this.builder.target(packet.sender());
-                this.builder.replyTo(packet.reponse());
+                this.builder.response(Response.replyTo(packet.reponse().ownTarget()));
 
                 Packet packet = this.builder.build()
                 flame.services().magicLink().connection().orElseThrow().publish(packet);
@@ -250,7 +251,7 @@ public final class Packet implements JSONParseable {
             public void replyTo(Packet packet) {
                 this.builder.sender(packet.target());
                 this.builder.target(packet.sender());
-                this.builder.replyTo(packet.response());
+                this.builder.response(Response.replyTo(packet.reponse().ownTarget()));
 
                 Packet packet = this.builder.build();
                 flame.services().magicLink().connection().orElseThrow().publish(packet);
@@ -264,44 +265,6 @@ public final class Packet implements JSONParseable {
          */
         public ReadyForSending identification(PacketIdentification id) {
             return new ReadyForSending(this.flame, this.builder.identification(id));
-        }
-    }
-    public static class ReplyPacketBuilder {
-        private final NakedBuilder builder;
-
-        public ReplyPacketBuilder(Packet packet) {
-            this.builder = new NakedBuilder();
-            this.builder.sender(packet.target());
-            this.builder.target(packet.sender());
-        }
-
-        public static class ReadyForParameters {
-            private final NakedBuilder builder;
-
-            protected ReadyForParameters(NakedBuilder builder) {
-                this.builder = builder;
-            }
-
-            public ReadyForParameters parameter(String key, String value) {
-                this.builder.parameter(key, new PacketParameter(value));
-                return this;
-            }
-            public ReadyForParameters parameter(String key, PacketParameter value) {
-                this.builder.parameter(key, value);
-                return this;
-            }
-
-            public Packet build() {
-                return this.builder.build();
-            }
-        }
-
-        /**
-         * The identification of this packet.
-         * Identification is what differentiates a "Server ping packet" from a "Teleport player packet"
-         */
-        public ReadyForParameters identification(PacketIdentification id) {
-            return new ReadyForParameters(this.builder.identification(id));
         }
     }
 
@@ -326,6 +289,7 @@ public final class Packet implements JSONParseable {
                     case Parameters.IDENTIFICATION -> builder.identification(new PacketIdentification(value.getAsString()));
                     case Parameters.SENDER -> builder.sender(Node.fromJSON(value.getAsJsonObject()));
                     case Parameters.TARGET -> builder.target(Node.fromJSON(value.getAsJsonObject()));
+                    case Parameters.RESPONSE -> builder.response(Response.fromJSON(value.getAsJsonObject()));
                     case Parameters.PARAMETERS -> parseParams(value.getAsJsonObject(), builder);
                 }
             });
@@ -349,6 +313,7 @@ public final class Packet implements JSONParseable {
         String IDENTIFICATION = "i";
         String SENDER = "s";
         String TARGET = "t";
+        String RESPONSE = "r";
         String PARAMETERS = "p";
     }
 
@@ -457,16 +422,19 @@ public final class Packet implements JSONParseable {
         }
     }
 
-    public static class Response {
-        private final UUID ownTarget = UUID.randomUUID();
+    public static class Response implements JSONParseable{
+        private final UUID ownTarget;
         private final UUID remoteTarget;
 
         private Response() {
-            this.arrow = null;
+            this(null);
         }
         private Response(UUID remoteTarget) {
-            this();
-            this.arrow = arrow;
+            this(UUID.randomUUID(), remoteTarget);
+        }
+        protected Response(@NotNull UUID ownTarget, UUID remoteTarget) {
+            this.ownTarget = ownTarget;
+            this.remoteTarget = remoteTarget;
         }
 
         public UUID ownTarget() {
@@ -483,6 +451,21 @@ public final class Packet implements JSONParseable {
         public static Response respondTo(UUID remoteTarget) {
             return new Response(remoteTarget);
         }
+        public static Response fromJSON(@NotNull JsonObject object) {
+            return new Response(
+                UUID.fromString(object.get("o").getAsString()),
+                UUID.fromString(object.get("r").getAsString())
+            );
+        }
+
+        public JsonObject toJSON() {
+            JsonObject object = new JsonObject();
+
+            object.put("o", this.ownTarget.toString();
+            object.put("r", this.remoteTarget().orElse("");
+
+            return object;
+        }
     }
 
     public static class Wrapper {
@@ -492,12 +475,13 @@ public final class Packet implements JSONParseable {
         public Node sender() { return this.packet.sender(); }
         public Node target() { return this.packet.target(); }
         public PacketIdentification identification() { return this.packet.identification(); }
+        public Response response() { return this.packet.response(); }
         public Map<String, PacketParameter> parameters() { return this.packet.parameters(); }
         public PacketParameter parameter(String key) { return this.packet.parameters().get(key); }
         public Packet packet() {
             return this.packet;
         }
-        public ReplyPacketBuilder reply() {
+        public CompletableFuture<Packet> reply() {
             return this.packet.reply();
         }
 
@@ -506,4 +490,3 @@ public final class Packet implements JSONParseable {
         }
     }
 }
-
