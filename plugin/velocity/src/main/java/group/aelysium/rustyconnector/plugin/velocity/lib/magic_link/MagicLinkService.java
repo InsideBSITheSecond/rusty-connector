@@ -14,6 +14,7 @@ import java.util.*;
 public class MagicLinkService extends ClockService implements IMagicLink {
     protected final long interval;
     protected IMessengerConnector redisConnector;
+    private VelocityPacketBuilder packetBuilder;
     protected Map<String, MagicLinkMCLoaderSettings> settingsMap;
 
     public MagicLinkService(long interval, IMessengerConnector redisConnector, Map<String, MagicLinkMCLoaderSettings> magicLinkMCLoaderSettingsMap) {
@@ -23,7 +24,9 @@ public class MagicLinkService extends ClockService implements IMagicLink {
         this.settingsMap = magicLinkMCLoaderSettingsMap;
     }
 
-    public void startHeartbeat(ServerService serverService) {
+    public void startHeartbeat(ServerService serverService, VelocityFlame flame) {
+        this.packetBuilder = new VelocityPacketBuilder(flame);
+
         this.scheduleRecurring(() -> {
             try {
                 // Unregister any stale servers
@@ -39,6 +42,10 @@ public class MagicLinkService extends ClockService implements IMagicLink {
                 });
             } catch (Exception ignore) {}
         }, 3, 5); // Period of `3` lets us not loop over the servers as many times with a small hit to how quickly stale servers will be unregistered.
+    }
+
+    public VelocityPacketBuilder packetBuilder() {
+        return this.packetBuilder;
     }
 
     public Optional<MagicLinkMCLoaderSettings> magicConfig(String name) {

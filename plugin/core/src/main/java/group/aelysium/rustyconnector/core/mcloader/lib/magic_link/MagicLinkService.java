@@ -25,10 +25,15 @@ public class MagicLinkService implements IMagicLinkService {
     private final IMessengerConnector messenger;
     private final ClockService heartbeat = new ClockService(2);
     private final AtomicInteger delay = new AtomicInteger(5);
+    private MCLoaderPacketBuilder packetBuilder;
     private boolean stopPinging = false;
 
     public MagicLinkService(IMessengerConnector messenger) {
         this.messenger = messenger;
+    }
+
+    public MCLoaderPacketBuilder packetBuilder() {
+        return this.packetBuilder;
     }
 
     public void setDelay(int delay) {
@@ -60,6 +65,8 @@ public class MagicLinkService implements IMagicLinkService {
     }
 
     public void startHeartbeat(IMCLoaderFlame<? extends ICoreServiceHandler> api) {
+        this.packetBuilder = new MCLoaderPacketBuilder(flame);
+
         this.scheduleNextPing(api);
     }
 

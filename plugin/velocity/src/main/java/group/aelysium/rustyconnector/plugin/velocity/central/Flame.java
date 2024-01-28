@@ -163,8 +163,6 @@ public class Flame extends VelocityFlame<CoreServiceHandler> {
 
             Flame flame = new Flame(uuid, new Version(version), memberKey.orElse(new char[0]), initialize.getServices(), initialize.getBootOutput());
 
-            flame.services().add(new VelocityPacketBuilder(flame));
-
             initialize.events(plugin, eventManager);
             initialize.commands(inject(flame, logger, messageCacheService));
             logger.send(Component.text("Initializing 100%...", NamedTextColor.DARK_GRAY));

@@ -79,8 +79,7 @@ public class MCLoaderFlame extends ServiceableService<CoreServiceHandler> implem
             initialize.eventManager();
 
             MCLoaderFlame flame = new MCLoaderFlame(version, configVersion, new CoreServiceHandler(initialize.getServices()));
-
-            flame.services().add(new MCLoaderPacketBuilder(flame));
+            
             magicLinkService.startHeartbeat(flame);
 
             return flame;
