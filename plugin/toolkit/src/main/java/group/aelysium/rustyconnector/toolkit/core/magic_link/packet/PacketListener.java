@@ -15,7 +15,7 @@ public abstract class PacketListener<TPacketWrapper extends Packet.Wrapper> {
 
     public abstract void execute(TPacketWrapper packet) throws Exception;
 
-    public void wrapAndExecute(Packet packet) throws Exception {
+    public final void wrapAndExecute(Packet packet) throws Exception {
         this.execute(this.wrap(packet));
     }
 }
