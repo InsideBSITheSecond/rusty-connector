@@ -22,14 +22,14 @@ public final class Packet implements JSONParseable {
     private final PacketIdentification identification;
     private final Target sender;
     private final Target target;
-    private final ResponseTargeting responseTargeting;
+    private final ResponseTarget responseTarget;
     private final Map<String, PacketParameter> parameters;
     private final CompletableFuture<Packet> reply = new CompletableFuture<>();
 
     public int messageVersion() { return this.messageVersion; }
     public Target sender() { return this.sender; }
     public Target target() { return this.target; }
-    public ResponseTargeting response() { return this.responseTargeting; }
+    public ResponseTarget responseTarget() { return this.responseTarget; }
     public PacketIdentification identification() { return this.identification; }
     public Map<String, PacketParameter> parameters() { return parameters; }
 
@@ -38,22 +38,22 @@ public final class Packet implements JSONParseable {
      * @return `true` if this packet is a response to another packet. `false` otherwise.
      */
     public boolean replying() {
-        return this.responseTargeting.remoteTarget().isPresent();
+        return this.responseTarget.remoteTarget().isPresent();
     }
 
     /**
      * Returns the packet which was sent as a reply to this one.
      */
-    public CompletableFuture<Packet> reply() {
+    public CompletableFuture<Packet> response() {
         return this.reply;
     }
 
-    public Packet(@NotNull Integer version, @NotNull PacketIdentification identification, @NotNull Packet.Target sender, @NotNull Packet.Target target, @NotNull Packet.ResponseTargeting responseTargeting, @NotNull Map<String, PacketParameter> parameters) {
+    public Packet(@NotNull Integer version, @NotNull PacketIdentification identification, @NotNull Packet.Target sender, @NotNull Packet.Target target, @NotNull Packet.ResponseTarget responseTarget, @NotNull Map<String, PacketParameter> parameters) {
         this.messageVersion = version;
         this.identification = identification;
         this.sender = sender;
         this.target = target;
-        this.responseTargeting = responseTargeting;
+        this.responseTarget = responseTarget;
         this.parameters = parameters;
     }
 
@@ -74,7 +74,7 @@ public final class Packet implements JSONParseable {
         object.add(Parameters.IDENTIFICATION, new JsonPrimitive(this.identification.toString()));
         object.add(Parameters.SENDER, this.sender.toJSON());
         object.add(Parameters.TARGET, this.target.toJSON());
-        object.add(Parameters.RESPONSE, this.responseTargeting.toJSON());
+        object.add(Parameters.RESPONSE, this.responseTarget.toJSON());
 
         JsonObject parameters = new JsonObject();
         this.parameters.forEach((key, value) -> parameters.add(key, value.toJSON()));
@@ -88,7 +88,7 @@ public final class Packet implements JSONParseable {
         private PacketIdentification id;
         private Target sender;
         private Target target;
-        private ResponseTargeting responseTargeting = ResponseTargeting.chainStart();
+        private ResponseTarget responseTarget = ResponseTarget.chainStart();
         private final Map<String, PacketParameter> parameters = new HashMap<>();
 
         public NakedBuilder identification(@NotNull PacketIdentification id) {
@@ -106,8 +106,8 @@ public final class Packet implements JSONParseable {
             return this;
         }
 
-        public NakedBuilder response(@NotNull Packet.ResponseTargeting responseTargeting) {
-            this.responseTargeting = responseTargeting;
+        public NakedBuilder response(@NotNull Packet.ResponseTarget responseTarget) {
+            this.responseTarget = responseTarget;
             return this;
         }
 
@@ -126,7 +126,7 @@ public final class Packet implements JSONParseable {
         }
 
         public Packet build() {
-            return new Packet(this.protocolVersion, this.id, this.sender, this.target, this.responseTargeting, this.parameters);
+            return new Packet(this.protocolVersion, this.id, this.sender, this.target, this.responseTarget, this.parameters);
         }
     }
 
@@ -191,7 +191,7 @@ public final class Packet implements JSONParseable {
                 ICoreMagicLinkService magicLinkService = fetchMagicLink();
 
                 magicLinkService.connection().orElseThrow().publish(packet);
-                magicLinkService.packetManager().activeReplyEndpoints().put(packet.response().ownTarget(), packet.reply());
+                magicLinkService.packetManager().activeReplyEndpoints().put(packet.responseTarget().ownTarget(), packet.response());
 
                 return packet;
             }
@@ -204,13 +204,13 @@ public final class Packet implements JSONParseable {
              */
             public void replyTo(Packet targetPacket) {
                 assignTargetAndSender(targetPacket.target(), targetPacket.sender());
-                this.builder.response(ResponseTargeting.respondTo(targetPacket.response().ownTarget()));
+                this.builder.response(ResponseTarget.respondTo(targetPacket.responseTarget().ownTarget()));
 
                 Packet packet = this.builder.build();
 
                 ICoreMagicLinkService magicLinkService = fetchMagicLink();
                 magicLinkService.connection().orElseThrow().publish(packet);
-                magicLinkService.packetManager().activeReplyEndpoints().put(packet.response().ownTarget(), packet.reply());
+                magicLinkService.packetManager().activeReplyEndpoints().put(packet.responseTarget().ownTarget(), packet.response());
             }
         }
 
@@ -244,7 +244,7 @@ public final class Packet implements JSONParseable {
                     case Parameters.IDENTIFICATION -> builder.identification(new PacketIdentification(value.getAsString()));
                     case Parameters.SENDER -> builder.sender(Target.fromJSON(value.getAsJsonObject()));
                     case Parameters.TARGET -> builder.target(Target.fromJSON(value.getAsJsonObject()));
-                    case Parameters.RESPONSE -> builder.response(ResponseTargeting.fromJSON(value.getAsJsonObject()));
+                    case Parameters.RESPONSE -> builder.response(ResponseTarget.fromJSON(value.getAsJsonObject()));
                     case Parameters.PARAMETERS -> parseParams(value.getAsJsonObject(), builder);
                 }
             });
@@ -377,17 +377,17 @@ public final class Packet implements JSONParseable {
         }
     }
 
-    public static class ResponseTargeting implements JSONParseable{
+    public static class ResponseTarget implements JSONParseable{
         private final UUID ownTarget;
         private final UUID remoteTarget;
 
-        private ResponseTargeting() {
+        private ResponseTarget() {
             this(null);
         }
-        private ResponseTargeting(UUID remoteTarget) {
+        private ResponseTarget(UUID remoteTarget) {
             this(UUID.randomUUID(), remoteTarget);
         }
-        protected ResponseTargeting(@NotNull UUID ownTarget, UUID remoteTarget) {
+        protected ResponseTarget(@NotNull UUID ownTarget, UUID remoteTarget) {
             this.ownTarget = ownTarget;
             this.remoteTarget = remoteTarget;
         }
@@ -400,14 +400,14 @@ public final class Packet implements JSONParseable {
             return Optional.of(this.remoteTarget);
         }
 
-        public static ResponseTargeting chainStart() {
-            return new ResponseTargeting();
+        public static ResponseTarget chainStart() {
+            return new ResponseTarget();
         }
-        public static ResponseTargeting respondTo(UUID remoteTarget) {
-            return new ResponseTargeting(remoteTarget);
+        public static ResponseTarget respondTo(UUID remoteTarget) {
+            return new ResponseTarget(remoteTarget);
         }
-        public static ResponseTargeting fromJSON(@NotNull JsonObject object) {
-            return new ResponseTargeting(
+        public static ResponseTarget fromJSON(@NotNull JsonObject object) {
+            return new ResponseTarget(
                 UUID.fromString(object.get("o").getAsString()),
                 UUID.fromString(object.get("r").getAsString())
             );
@@ -433,14 +433,14 @@ public final class Packet implements JSONParseable {
         public Target sender() { return this.packet.sender(); }
         public Target target() { return this.packet.target(); }
         public PacketIdentification identification() { return this.packet.identification(); }
-        public ResponseTargeting response() { return this.packet.response(); }
+        public ResponseTarget responseTarget() { return this.packet.responseTarget(); }
         public Map<String, PacketParameter> parameters() { return this.packet.parameters(); }
         public PacketParameter parameter(String key) { return this.packet.parameters().get(key); }
         public Packet packet() {
             return this.packet;
         }
-        public CompletableFuture<Packet> reply() {
-            return this.packet.reply();
+        public CompletableFuture<Packet> response() {
+            return this.packet.response();
         }
 
         protected Wrapper(Packet packet) {

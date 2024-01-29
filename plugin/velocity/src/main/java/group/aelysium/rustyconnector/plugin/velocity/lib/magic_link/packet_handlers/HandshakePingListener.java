@@ -5,7 +5,6 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.family.Family;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.ranked_family.RankedFamily;
 import group.aelysium.rustyconnector.plugin.velocity.lib.magic_link.MagicLinkService;
 import group.aelysium.rustyconnector.plugin.velocity.lib.server.RankedMCLoader;
-import group.aelysium.rustyconnector.toolkit.core.magic_link.messenger.MessengerConnection;
 import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketListener;
 import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketIdentification;
@@ -18,6 +17,8 @@ import group.aelysium.rustyconnector.toolkit.core.server.ServerAssignment;
 import group.aelysium.rustyconnector.toolkit.velocity.magic_link.IMagicLinkService;
 import group.aelysium.rustyconnector.toolkit.velocity.util.AddressUtil;
 import net.kyori.adventure.text.format.NamedTextColor;
+
+import java.util.concurrent.TimeUnit;
 
 public class HandshakePingListener extends PacketListener<MagicLink.Handshake.Ping> {
     protected Tinder api;

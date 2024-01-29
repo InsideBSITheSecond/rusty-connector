@@ -75,7 +75,7 @@ public abstract class MessengerSubscriber {
                     } catch (Exception ignore) {}
                     if(magicLink == null) throw new Exception("There was no flame available to handle the message!");
 
-                    CompletableFuture<Packet> reply = magicLink.packetManager().activeReplyEndpoints().get(message.response().remoteTarget().orElseThrow(() ->
+                    CompletableFuture<Packet> reply = magicLink.packetManager().activeReplyEndpoints().get(message.responseTarget().remoteTarget().orElseThrow(() ->
                             new NoSuchElementException("There was no available packet to reply to.")
                             ));
 
