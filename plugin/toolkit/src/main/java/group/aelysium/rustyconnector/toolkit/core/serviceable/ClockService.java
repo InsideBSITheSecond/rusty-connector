@@ -16,6 +16,15 @@ public class ClockService implements Service {
     }
 
     /**
+     * Schedule a new task to run as soon as possible
+     *
+     * @param runnable The runnable task to run.
+     */
+    public void scheduleNow(Runnable runnable) {
+        this.executorService.execute(runnable);
+    }
+
+    /**
      * Schedule a new task to run every `heartbeat`
      *
      * @param runnable The runnable task to run.
