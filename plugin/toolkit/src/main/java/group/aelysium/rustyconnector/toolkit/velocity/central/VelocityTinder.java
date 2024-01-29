@@ -3,8 +3,6 @@ package group.aelysium.rustyconnector.toolkit.velocity.central;
 import group.aelysium.rustyconnector.toolkit.core.lang.ILangService;
 import group.aelysium.rustyconnector.toolkit.core.lang.ILanguageResolver;
 import group.aelysium.rustyconnector.toolkit.core.logger.PluginLogger;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnection;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnector;
 
 import java.io.InputStream;
 import java.nio.file.Path;

@@ -5,7 +5,6 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.family.FamilyService;
 import group.aelysium.rustyconnector.toolkit.core.log_gate.GateKey;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.ClockService;
 import group.aelysium.rustyconnector.plugin.velocity.PluginLogger;
-import group.aelysium.rustyconnector.plugin.velocity.lib.family.Family;
 import group.aelysium.rustyconnector.plugin.velocity.lib.lang.ProxyLang;
 import group.aelysium.rustyconnector.toolkit.velocity.events.family.RebalanceEvent;
 import group.aelysium.rustyconnector.toolkit.velocity.family.IFamily;

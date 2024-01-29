@@ -6,9 +6,9 @@ import com.google.gson.JsonObject;
 import group.aelysium.rustyconnector.core.TinderAdapterForCore;
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
 import group.aelysium.rustyconnector.core.lib.packets.RankedGame;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketListener;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketListener;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketIdentification;
 import group.aelysium.rustyconnector.toolkit.mc_loader.central.IMCLoaderTinder;
 import group.aelysium.rustyconnector.toolkit.mc_loader.events.ranked_game.RankedGameReadyEvent;
 

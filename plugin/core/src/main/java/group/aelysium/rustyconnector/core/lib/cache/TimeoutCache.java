@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import group.aelysium.rustyconnector.toolkit.core.serviceable.ClockService;
@@ -14,6 +15,7 @@ public class TimeoutCache<K, V> implements Closeable, Map<K, V> {
     private final Map<K, TimedValue<V>> map = new ConcurrentHashMap<>();
     private final LiquidTimestamp expiration;
     private final ClockService clock = new ClockService(1);
+    private final List<Consumer<V>> onTimeout = new ArrayList<>();
     private boolean shutdown = false;
 
     public TimeoutCache(LiquidTimestamp expiration) {
@@ -23,15 +25,26 @@ public class TimeoutCache<K, V> implements Closeable, Map<K, V> {
 
     private void evaluateThenRunAgain() {
         long now = Instant.now().getEpochSecond();
-        this.map.entrySet().removeIf(entry -> entry.getValue().olderThan(now));
+        this.map.entrySet().removeIf(entry -> {
+            boolean remove = entry.getValue().olderThan(now);
+
+            if(remove) this.onTimeout.forEach(consumer -> consumer.accept(entry.getValue().value()));
+
+            return remove;
+        });
 
         if(shutdown) return;
         this.clock.scheduleDelayed(this::evaluateThenRunAgain, this.expiration);
     }
 
+    public void onTimeout(Consumer<V> consumer) {
+        this.onTimeout.add(consumer);
+    }
+
     @Override
     public void close() throws IOException {
         this.shutdown = true;
+        this.onTimeout.clear();
         this.clock.kill();
     }
 

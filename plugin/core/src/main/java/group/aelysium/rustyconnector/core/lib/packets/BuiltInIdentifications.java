@@ -1,6 +1,6 @@
 package group.aelysium.rustyconnector.core.lib.packets;
 
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketIdentification;
 
 import java.util.ArrayList;
 import java.util.List;

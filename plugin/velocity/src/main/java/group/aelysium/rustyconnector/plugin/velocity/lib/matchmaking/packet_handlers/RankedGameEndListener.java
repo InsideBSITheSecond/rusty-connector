@@ -1,14 +1,13 @@
 package group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.packet_handlers;
 
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
-import group.aelysium.rustyconnector.core.lib.packets.MagicLink;
 import group.aelysium.rustyconnector.core.lib.packets.RankedGame;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.ranked_family.RankedFamily;
 import group.aelysium.rustyconnector.plugin.velocity.lib.server.RankedMCLoader;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.plugin.velocity.central.Tinder;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketListener;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketListener;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketIdentification;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.gameplay.ISession;
 import group.aelysium.rustyconnector.toolkit.velocity.server.IRankedMCLoader;
 

@@ -1,9 +1,9 @@
 package group.aelysium.rustyconnector.core.lib.cache;
 
 import group.aelysium.rustyconnector.toolkit.core.message_cache.IMessageCacheService;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketStatus;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketStatus;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketIdentification;
 import group.aelysium.rustyconnector.core.lib.crypt.Snowflake;
 
 import java.util.*;

@@ -1,6 +1,6 @@
 package group.aelysium.rustyconnector.core.lib.packets;
 
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 
 public class QueueTPAPacket extends Packet.Wrapper {
     public QueueTPAPacket(Packet packet) {

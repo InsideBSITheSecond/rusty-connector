@@ -2,7 +2,6 @@ package group.aelysium.rustyconnector.core.mcloader.central;
 
 import group.aelysium.rustyconnector.core.lib.events.EventManager;
 import group.aelysium.rustyconnector.core.mcloader.lib.ranked_game_interface.RankedGameInterfaceService;
-import group.aelysium.rustyconnector.toolkit.core.packet.MCLoaderPacketBuilder;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.ServiceHandler;
 import group.aelysium.rustyconnector.toolkit.mc_loader.central.ICoreServiceHandler;
 import group.aelysium.rustyconnector.core.lib.cache.MessageCacheService;
@@ -36,9 +35,6 @@ public class CoreServiceHandler extends ServiceHandler implements ICoreServiceHa
     }
     public DynamicTeleportService dynamicTeleport() {
         return this.find(DynamicTeleportService.class).orElseThrow();
-    }
-    public MCLoaderPacketBuilder packetBuilder() {
-        return this.find(MCLoaderPacketBuilder.class).orElseThrow();
     }
     public Optional<RankedGameInterfaceService> rankedGameInterface() {
         return this.find(RankedGameInterfaceService.class);

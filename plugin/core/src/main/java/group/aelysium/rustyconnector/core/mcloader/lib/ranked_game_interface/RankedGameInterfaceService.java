@@ -7,7 +7,7 @@ import group.aelysium.rustyconnector.core.TinderAdapterForCore;
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
 import group.aelysium.rustyconnector.core.lib.packets.RankedGame;
 import group.aelysium.rustyconnector.core.mcloader.central.MCLoaderTinder;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.toolkit.mc_loader.events.ranked_game.RankedGameEndEvent;
 import group.aelysium.rustyconnector.toolkit.mc_loader.ranked_game_interface.IRankedGameInterfaceService;
 
@@ -62,12 +62,10 @@ public class RankedGameInterfaceService implements IRankedGameInterfaceService {
 
         tinder.services().events().fireEvent(new RankedGameEndEvent(uuid, sessionPlayers, winners));
 
-        Packet packet = tinder.services().packetBuilder().newBuilder()
+        tinder.services().magicLink().packetManager().newPacketBuilder()
                 .identification(BuiltInIdentifications.RANKED_GAME_END)
-                .sendingToAnyProxy()
                 .parameter(RankedGame.End.Parameters.SESSION, object.toString())
-                .build();
-        tinder.services().magicLink().connection().orElseThrow().publish(packet);
+                .sendTo(Packet.Target.allAvailableProxies());
 
         this.uuid = null;
         this.players = null;

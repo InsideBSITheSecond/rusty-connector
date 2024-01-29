@@ -6,9 +6,9 @@ import group.aelysium.rustyconnector.core.lib.crypt.AESCryptor;
 import group.aelysium.rustyconnector.core.lib.model.FailService;
 import group.aelysium.rustyconnector.toolkit.core.message_cache.ICacheableMessage;
 import group.aelysium.rustyconnector.toolkit.core.message_cache.IMessageCacheService;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketListener;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketIdentification;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketListener;
 import io.lettuce.core.RedisChannelHandler;
 import io.lettuce.core.RedisConnectionStateAdapter;
 import io.lettuce.core.pubsub.RedisPubSubAdapter;
@@ -17,14 +17,12 @@ import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class RedisSubscriber extends MessengerSubscriber {
     private CountDownLatch lock = new CountDownLatch(0);
     private final RedisClient client;
-    public RedisSubscriber(AESCryptor cryptor, RedisClient client, IMessageCacheService<? extends ICacheableMessage> cache, PluginLogger logger, Packet.Node senderUUID, Map<PacketIdentification, List<PacketListener<? extends Packet.Wrapper>>> listeners) {
+    public RedisSubscriber(AESCryptor cryptor, RedisClient client, IMessageCacheService<? extends ICacheableMessage> cache, PluginLogger logger, Packet.Target senderUUID, Map<PacketIdentification, List<PacketListener<? extends Packet.Wrapper>>> listeners) {
         super(cryptor, cache, logger, senderUUID, listeners);
         this.client = client;
         this.client.addListener(new RedisSubscriberListener());

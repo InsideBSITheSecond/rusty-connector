@@ -1,6 +1,6 @@
 package group.aelysium.rustyconnector.core.lib.data_transit;
 
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.core.lib.exception.BlockedMessageException;
 import group.aelysium.rustyconnector.core.lib.exception.NoOutputException;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.interfaces.Service;

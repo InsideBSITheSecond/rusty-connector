@@ -1,6 +1,12 @@
 package group.aelysium.rustyconnector.core.lib.messenger;
 
-import group.aelysium.rustyconnector.toolkit.core.packet.*;
+import group.aelysium.rustyconnector.core.mcloader.central.MCLoaderFlame;
+import group.aelysium.rustyconnector.toolkit.RustyConnector;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.ICoreMagicLinkService;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketIdentification;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketListener;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketStatus;
 import group.aelysium.rustyconnector.toolkit.core.message_cache.ICacheableMessage;
 import group.aelysium.rustyconnector.toolkit.core.message_cache.IMessageCacheService;
 import group.aelysium.rustyconnector.toolkit.core.logger.PluginLogger;
@@ -9,17 +15,19 @@ import group.aelysium.rustyconnector.core.lib.exception.BlockedMessageException;
 import group.aelysium.rustyconnector.core.lib.exception.NoOutputException;
 import group.aelysium.rustyconnector.core.lib.crypt.AESCryptor;
 import group.aelysium.rustyconnector.toolkit.core.log_gate.GateKey;
+import group.aelysium.rustyconnector.toolkit.velocity.central.VelocityFlame;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public abstract class MessengerSubscriber {
     private final Map<PacketIdentification, List<PacketListener<? extends Packet.Wrapper>>> listeners;
     private final AESCryptor cryptor;
     private final PluginLogger logger;
     private IMessageCacheService<? extends ICacheableMessage> messageCache;
-    private final Packet.Node self; // This is a representation of who we are. Any time we receive a packet, this is how we know if it is addressed to us.
+    private final Packet.Target self; // This is a representation of who we are. Any time we receive a packet, this is how we know if it is addressed to us.
 
-    public MessengerSubscriber(AESCryptor cryptor, IMessageCacheService<? extends ICacheableMessage> messageCache, PluginLogger logger, Packet.Node self, Map<PacketIdentification, List<PacketListener<? extends Packet.Wrapper>>> listeners) {
+    public MessengerSubscriber(AESCryptor cryptor, IMessageCacheService<? extends ICacheableMessage> messageCache, PluginLogger logger, Packet.Target self, Map<PacketIdentification, List<PacketListener<? extends Packet.Wrapper>>> listeners) {
         this.cryptor = cryptor;
         this.messageCache = messageCache;
         this.logger = logger;
@@ -56,6 +64,24 @@ public abstract class MessengerSubscriber {
 
             try {
                 cachedMessage.sentenceMessage(PacketStatus.ACCEPTED);
+
+                if(message.replying()) {
+                    ICoreMagicLinkService magicLink = null;
+                    try {
+                        magicLink = ((VelocityFlame<?>) RustyConnector.Toolkit.proxy().orElseThrow()).services().magicLink();
+                    } catch (Exception ignore) {}
+                    try {
+                        magicLink = ((MCLoaderFlame) RustyConnector.Toolkit.mcLoader().orElseThrow()).services().magicLink();
+                    } catch (Exception ignore) {}
+                    if(magicLink == null) throw new Exception("There was no flame available to handle the message!");
+
+                    CompletableFuture<Packet> reply = magicLink.packetManager().activeReplyEndpoints().get(message.response().remoteTarget().orElseThrow(() ->
+                            new NoSuchElementException("There was no available packet to reply to.")
+                            ));
+
+                    reply.complete(message);
+                    return;
+                }
 
                 List<PacketListener<? extends Packet.Wrapper>> listeners = this.listeners.get(message.identification());
                 if(listeners == null) throw new NullPointerException("No packet handler with the type "+message.identification()+" exists!");

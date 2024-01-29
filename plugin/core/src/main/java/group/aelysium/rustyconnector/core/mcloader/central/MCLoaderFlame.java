@@ -22,10 +22,9 @@ import group.aelysium.rustyconnector.core.mcloader.lib.ranked_game_interface.han
 import group.aelysium.rustyconnector.core.mcloader.lib.ranked_game_interface.handlers.RankedGameReadyListener;
 import group.aelysium.rustyconnector.core.mcloader.lib.server_info.ServerInfoService;
 import group.aelysium.rustyconnector.toolkit.core.logger.PluginLogger;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnection;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnector;
-import group.aelysium.rustyconnector.toolkit.core.packet.MCLoaderPacketBuilder;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.messenger.MessengerConnection;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.messenger.IMessengerConnector;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.ServiceableService;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.interfaces.Service;
 import group.aelysium.rustyconnector.toolkit.mc_loader.central.IMCLoaderFlame;
@@ -186,7 +185,7 @@ class Initialize {
 
 
         messenger.connect();
-        IMessengerConnection connection = messenger.connection().orElseThrow();
+        MessengerConnection connection = messenger.connection().orElseThrow();
 
         connection.listen(new HandshakeSuccessListener(this.api));
         connection.listen(new HandshakeFailureListener(this.api));
@@ -195,7 +194,7 @@ class Initialize {
         connection.listen(new RankedGameReadyListener(this.api));
         connection.listen(new RankedGameImplodedListener(this.api));
 
-        ((RedisConnection) connection).startListening(cacheService, logger, Packet.Node.mcLoader(senderUUID));
+        ((RedisConnection) connection).startListening(cacheService, logger, Packet.Target.mcLoader(senderUUID));
 
         logger.send(Component.text("Finished building Connectors.", NamedTextColor.GREEN));
 

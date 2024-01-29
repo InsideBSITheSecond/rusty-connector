@@ -1,7 +1,6 @@
 package group.aelysium.rustyconnector.toolkit.mc_loader.central;
 
 import group.aelysium.rustyconnector.toolkit.core.events.EventManager;
-import group.aelysium.rustyconnector.toolkit.core.packet.MCLoaderPacketBuilder;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.interfaces.IServiceHandler;
 import group.aelysium.rustyconnector.toolkit.mc_loader.dynamic_teleport.ICoordinateRequest;
 import group.aelysium.rustyconnector.toolkit.mc_loader.dynamic_teleport.IDynamicTeleportService;
@@ -21,5 +20,4 @@ public interface ICoreServiceHandler extends IServiceHandler {
     IServerInfoService serverInfo();
     Optional<? extends IRankedGameInterfaceService> rankedGameInterface();
     IDynamicTeleportService<? extends ICoordinateRequest> dynamicTeleport();
-    MCLoaderPacketBuilder packetBuilder();
 }

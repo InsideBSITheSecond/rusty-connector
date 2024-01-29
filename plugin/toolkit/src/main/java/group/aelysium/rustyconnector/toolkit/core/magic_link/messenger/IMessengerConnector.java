@@ -1,4 +1,4 @@
-package group.aelysium.rustyconnector.toolkit.core.messenger;
+package group.aelysium.rustyconnector.toolkit.core.magic_link.messenger;
 
 import group.aelysium.rustyconnector.toolkit.core.serviceable.interfaces.Service;
 
@@ -8,15 +8,15 @@ import java.util.Optional;
 public interface IMessengerConnector extends Service {
     /**
      * Gets the connection to the remote resource.
-     * @return {@link IMessengerConnection}
+     * @return {@link MessengerConnection}
      */
-    Optional<IMessengerConnection> connection();
+    Optional<MessengerConnection> connection();
 
     /**
      * Connect to the remote resource.
      *
-     * @return A {@link IMessengerConnection}.
+     * @return A {@link MessengerConnection}.
      * @throws ConnectException If there was an issue connecting to the remote resource.
      */
-    IMessengerConnection connect() throws ConnectException;
+    MessengerConnection connect() throws ConnectException;
 }

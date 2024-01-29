@@ -1,7 +1,7 @@
 package group.aelysium.rustyconnector.core.lib.packets;
 
 import group.aelysium.rustyconnector.core.mcloader.central.MCLoaderFlame;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 
 public interface MCLoader {
     class Lock extends Packet.Wrapper {
@@ -10,10 +10,9 @@ public interface MCLoader {
         }
 
         public static Packet build(MCLoaderFlame flame) {
-            return flame.services().packetBuilder().newBuilder()
+            return flame.services().magicLink().packetManager().newPacketBuilder()
                     .identification(BuiltInIdentifications.LOCK_SERVER)
-                    .sendingToAnyProxy()
-                    .build();
+                    .sendTo(Packet.Target.allAvailableProxies());
         }
     }
     class Unlock extends Packet.Wrapper {
@@ -22,10 +21,9 @@ public interface MCLoader {
         }
 
         public static Packet build(MCLoaderFlame flame) {
-            return flame.services().packetBuilder().newBuilder()
+            return flame.services().magicLink().packetManager().newPacketBuilder()
                     .identification(BuiltInIdentifications.UNLOCK_SERVER)
-                    .sendingToAnyProxy()
-                    .build();
+                    .sendTo(Packet.Target.allAvailableProxies());
         }
     }
 }

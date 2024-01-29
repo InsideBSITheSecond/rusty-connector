@@ -1,13 +1,11 @@
 package group.aelysium.rustyconnector.core.lib.messenger.implementors.redis;
 
 import group.aelysium.rustyconnector.core.lib.crypt.AESCryptor;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import io.lettuce.core.RedisChannelHandler;
 import io.lettuce.core.RedisConnectionStateAdapter;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.async.RedisPubSubAsyncCommands;
-
-import java.util.concurrent.TimeUnit;
 
 public class RedisPublisher {
     private final RedisClient client;

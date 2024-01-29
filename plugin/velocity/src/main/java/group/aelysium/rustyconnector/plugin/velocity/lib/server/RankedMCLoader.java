@@ -3,8 +3,8 @@ package group.aelysium.rustyconnector.plugin.velocity.lib.server;
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
 import group.aelysium.rustyconnector.core.lib.packets.RankedGame;
 import group.aelysium.rustyconnector.plugin.velocity.central.Tinder;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketParameter;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketParameter;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.gameplay.ISession;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
 import group.aelysium.rustyconnector.toolkit.velocity.server.IRankedMCLoader;
@@ -28,12 +28,10 @@ public class RankedMCLoader extends MCLoader implements IRankedMCLoader {
         for (IPlayer rankedPlayer : session.players())
             this.connect(rankedPlayer);
 
-        Packet packet = Tinder.get().services().packetBuilder().newBuilder()
+        Tinder.get().services().magicLink().packetManager().newPacketBuilder()
                 .identification(BuiltInIdentifications.RANKED_GAME_READY)
-                .sendingToMCLoader(this.uuid())
                 .parameter(RankedGame.Ready.Parameters.SESSION, new PacketParameter(session.toJSON()))
-                .build();
-        Tinder.get().services().magicLink().connection().orElseThrow().publish(packet);
+                .sendTo(Packet.Target.mcLoader(this.uuid()));
 
         this.activeSession = session;
         this.lock();

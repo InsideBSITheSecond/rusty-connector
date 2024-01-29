@@ -1,11 +1,12 @@
 package group.aelysium.rustyconnector.core.mcloader.lib.magic_link;
 
+import group.aelysium.rustyconnector.core.lib.magic_link.MagicLinkCore;
+import group.aelysium.rustyconnector.core.lib.magic_link.PacketManagerService;
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
 import group.aelysium.rustyconnector.core.mcloader.central.MCLoaderFlame;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnection;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnector;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketParameter;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.messenger.IMessengerConnector;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketParameter;
 import group.aelysium.rustyconnector.core.lib.packets.MagicLink;
 import group.aelysium.rustyconnector.toolkit.mc_loader.central.ICoreServiceHandler;
 import group.aelysium.rustyconnector.toolkit.mc_loader.central.IMCLoaderFlame;
@@ -16,66 +17,47 @@ import group.aelysium.rustyconnector.toolkit.mc_loader.server_info.IServerInfoSe
 import group.aelysium.rustyconnector.toolkit.velocity.util.LiquidTimestamp;
 import group.aelysium.rustyconnector.core.TinderAdapterForCore;
 
-import java.net.ConnectException;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MagicLinkService implements IMagicLinkService {
-    private final IMessengerConnector messenger;
+public class MagicLinkService extends MagicLinkCore implements IMagicLinkService {
     private final ClockService heartbeat = new ClockService(2);
     private final AtomicInteger delay = new AtomicInteger(5);
-    private MCLoaderPacketBuilder packetBuilder;
     private boolean stopPinging = false;
 
     public MagicLinkService(IMessengerConnector messenger) {
-        this.messenger = messenger;
-    }
-
-    public MCLoaderPacketBuilder packetBuilder() {
-        return this.packetBuilder;
+        super(messenger);
     }
 
     public void setDelay(int delay) {
         this.delay.set(delay);
     }
 
-    private void scheduleNextPing(IMCLoaderFlame<? extends ICoreServiceHandler> api) {
-        IServerInfoService serverInfoService = api.services().serverInfo();
+    private void scheduleNextPing(IMCLoaderFlame<? extends ICoreServiceHandler> flame) {
+        IServerInfoService serverInfoService = flame.services().serverInfo();
         this.heartbeat.scheduleDelayed(() -> {
             if(stopPinging) return;
 
             try {
-                Packet packet = api.services().packetBuilder().newBuilder()
+                this.packetManager().newPacketBuilder()
                         .identification(BuiltInIdentifications.MAGICLINK_HANDSHAKE_PING)
-                        .sendingToAnyProxy()
                         .parameter(MagicLink.Handshake.Ping.Parameters.ADDRESS, serverInfoService.address())
                         .parameter(MagicLink.Handshake.Ping.Parameters.DISPLAY_NAME, serverInfoService.displayName())
                         .parameter(MagicLink.Handshake.Ping.Parameters.MAGIC_CONFIG_NAME, serverInfoService.magicConfig())
                         .parameter(MagicLink.Handshake.Ping.Parameters.PLAYER_COUNT, new PacketParameter(serverInfoService.playerCount()))
-                        .build();
-
-                api.services().magicLink().connection().orElseThrow().publish(packet);
+                        .sendTo(Packet.Target.allAvailableProxies());
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            MagicLinkService.this.scheduleNextPing(api);
+            MagicLinkService.this.scheduleNextPing(flame);
         }, LiquidTimestamp.from(this.delay.get(), TimeUnit.SECONDS));
     }
 
-    public void startHeartbeat(IMCLoaderFlame<? extends ICoreServiceHandler> api) {
-        this.packetBuilder = new MCLoaderPacketBuilder(flame);
+    public void startHeartbeat(IMCLoaderFlame<? extends ICoreServiceHandler> flame) {
+        this.packetManager = new PacketManagerService<>(flame);
 
-        this.scheduleNextPing(api);
-    }
-
-    public Optional<IMessengerConnection> connection() {
-        return this.messenger.connection();
-    }
-
-    public IMessengerConnection connect() throws ConnectException {
-        return this.messenger.connect();
+        this.scheduleNextPing(flame);
     }
 
     @Override
@@ -83,18 +65,16 @@ public class MagicLinkService implements IMagicLinkService {
         stopPinging = true;
 
         try {
-            MCLoaderFlame api = TinderAdapterForCore.getTinder().flame();
+            MCLoaderFlame flame = TinderAdapterForCore.getTinder().flame();
 
-            Packet packet = api.services().packetBuilder().newBuilder()
+            this.packetManager().newPacketBuilder()
                     .identification(BuiltInIdentifications.MAGICLINK_HANDSHAKE_DISCONNECT)
-                    .sendingToAnyProxy()
-                    .build();
-            this.connection().orElseThrow().publish(packet);
+                    .sendTo(Packet.Target.allAvailableProxies());
 
-            api.services().events().fireEvent(new DisconnectedEvent());
+            flame.services().events().fireEvent(new DisconnectedEvent());
         } catch (Exception ignore) {}
 
         this.heartbeat.kill();
-        this.messenger.kill();
+        this.redisConnector.kill();
     }
 }

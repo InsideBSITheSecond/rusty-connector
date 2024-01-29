@@ -1,7 +1,7 @@
 package group.aelysium.rustyconnector.core.lib.cache;
 
 import group.aelysium.rustyconnector.toolkit.core.message_cache.ICacheableMessage;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketStatus;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketStatus;
 
 import java.util.Date;
 

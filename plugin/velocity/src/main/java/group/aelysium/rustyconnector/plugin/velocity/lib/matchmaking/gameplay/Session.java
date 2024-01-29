@@ -10,7 +10,7 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.family.Family;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.ranked_family.RankedFamily;
 import group.aelysium.rustyconnector.plugin.velocity.lib.server.RankedMCLoader;
 import group.aelysium.rustyconnector.plugin.velocity.lib.storage.StorageService;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.toolkit.velocity.matchmaking.gameplay.ISession;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
 import group.aelysium.rustyconnector.toolkit.velocity.server.IRankedMCLoader;
@@ -70,13 +70,11 @@ public class Session implements ISession {
     public void implode(String reason) {
         this.players.forEach(player -> player.sendMessage(Component.text(reason, NamedTextColor.RED)));
 
-        Packet packet = Tinder.get().services().packetBuilder().newBuilder()
+        Tinder.get().services().magicLink().packetManager().newPacketBuilder()
                 .identification(BuiltInIdentifications.RANKED_GAME_IMPLODE)
-                .sendingToMCLoader(this.uuid())
                 .parameter(RankedGame.Imploded.Parameters.REASON, reason)
                 .parameter(RankedGame.Imploded.Parameters.SESSION_UUID, this.uuid.toString())
-                .build();
-        Tinder.get().services().magicLink().connection().orElseThrow().publish(packet);
+                .sendTo(Packet.Target.mcLoader(this.mcLoader.uuid()));
         this.mcLoader.unlock();
 
         this.end(List.of(), List.of());

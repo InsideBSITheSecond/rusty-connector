@@ -13,7 +13,7 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.Permission;
 import group.aelysium.rustyconnector.plugin.velocity.lib.lang.ProxyLang;
 import group.aelysium.rustyconnector.plugin.velocity.lib.parties.Party;
 import group.aelysium.rustyconnector.toolkit.core.log_gate.GateKey;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.toolkit.velocity.connection.ConnectionResult;
 import group.aelysium.rustyconnector.toolkit.velocity.connection.PartyConnectable;
 import group.aelysium.rustyconnector.toolkit.velocity.connection.PlayerConnectable;
@@ -156,11 +156,9 @@ public class MCLoader implements IMCLoader {
             api.services().server().remove(this);
 
             try {
-                Packet packet = api.services().packetBuilder().newBuilder()
+                api.services().magicLink().packetManager().newPacketBuilder()
                         .identification(BuiltInIdentifications.MAGICLINK_HANDSHAKE_STALE_PING)
-                        .sendingToMCLoader(server.uuid())
-                        .build();
-                api.services().magicLink().connection().orElseThrow().publish(packet);
+                        .sendTo(Packet.Target.mcLoader(server.uuid));
             } catch (Exception ignore) {}
 
             if (removeFromFamily)

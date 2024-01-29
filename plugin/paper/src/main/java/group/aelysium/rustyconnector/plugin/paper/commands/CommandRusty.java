@@ -16,7 +16,7 @@ import group.aelysium.rustyconnector.core.lib.packets.MCLoader;
 import group.aelysium.rustyconnector.plugin.paper.PluginLogger;
 import group.aelysium.rustyconnector.plugin.paper.central.Tinder;
 import group.aelysium.rustyconnector.core.mcloader.lib.lang.MCLoaderLang;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.core.lib.packets.SendPlayerPacket;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -135,14 +135,11 @@ public final class CommandRusty {
                                 final Player player = commandContext.get("player");
                                 final String familyName = commandContext.get("family-name");
 
-                                Packet message = api.services().packetBuilder().newBuilder()
+                                api.services().magicLink().packetManager().newPacketBuilder()
                                         .identification(BuiltInIdentifications.SEND_PLAYER)
-                                        .sendingToAnyProxy()
                                         .parameter(SendPlayerPacket.Parameters.TARGET_FAMILY_NAME, familyName)
                                         .parameter(SendPlayerPacket.Parameters.PLAYER_UUID, player.getUniqueId().toString())
-                                        .build();
-
-                                api.services().magicLink().connection().orElseThrow().publish(message);
+                                        .sendTo(Packet.Target.allAvailableProxies());
                             } catch (NullPointerException e) {
                                 MCLoaderLang.RC_SEND_USAGE.send(logger);
                             } catch (Exception e) {
@@ -179,7 +176,7 @@ public final class CommandRusty {
                 .handler(context -> manager.taskRecipe().begin(context)
                         .asynchronous(commandContext -> {
                     try {
-                        api.services().magicLink().connection().orElseThrow().publish(MCLoader.Unlock.build(api.flame()));
+                        MCLoader.Unlock.build(api.flame());
                         logger.log("Unlocking server.");
                     } catch (NullPointerException e) {
                         MCLoaderLang.RC_SEND_USAGE.send(logger);
@@ -200,7 +197,7 @@ public final class CommandRusty {
                 .handler(context -> manager.taskRecipe().begin(context)
                         .asynchronous(commandContext -> {
                             try {
-                                api.services().magicLink().connection().orElseThrow().publish(MCLoader.Lock.build(api.flame()));
+                                MCLoader.Lock.build(api.flame());
                                 logger.log("Locking server.");
                             } catch (NullPointerException e) {
                                 MCLoaderLang.RC_SEND_USAGE.send(logger);

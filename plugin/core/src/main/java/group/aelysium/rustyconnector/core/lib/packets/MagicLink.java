@@ -1,6 +1,6 @@
 package group.aelysium.rustyconnector.core.lib.packets;
 
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.toolkit.core.server.ServerAssignment;
 import group.aelysium.rustyconnector.toolkit.velocity.util.ColorMapper;
 import net.kyori.adventure.text.format.NamedTextColor;

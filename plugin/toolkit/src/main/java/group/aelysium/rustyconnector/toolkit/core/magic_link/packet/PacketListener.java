@@ -1,4 +1,4 @@
-package group.aelysium.rustyconnector.toolkit.core.packet;
+package group.aelysium.rustyconnector.toolkit.core.magic_link.packet;
 
 public abstract class PacketListener<TPacketWrapper extends Packet.Wrapper> {
     /**

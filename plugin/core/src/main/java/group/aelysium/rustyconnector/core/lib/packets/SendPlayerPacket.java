@@ -1,11 +1,9 @@
 package group.aelysium.rustyconnector.core.lib.packets;
 
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketParameter;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class SendPlayerPacket extends Packet.Wrapper {

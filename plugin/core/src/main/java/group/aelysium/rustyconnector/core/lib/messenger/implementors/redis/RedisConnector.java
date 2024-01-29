@@ -3,8 +3,7 @@ package group.aelysium.rustyconnector.core.lib.messenger.implementors.redis;
 import group.aelysium.rustyconnector.toolkit.core.UserPass;
 import group.aelysium.rustyconnector.core.lib.messenger.MessengerConnector;
 import group.aelysium.rustyconnector.core.lib.crypt.AESCryptor;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnection;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnector;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.messenger.MessengerConnection;
 import io.lettuce.core.protocol.ProtocolVersion;
 import io.lettuce.core.resource.ClientResources;
 
@@ -23,7 +22,7 @@ public class RedisConnector extends MessengerConnector {
     }
 
     @Override
-    public IMessengerConnection connect() throws ConnectException {
+    public MessengerConnection connect() throws ConnectException {
 
         this.connection = new RedisConnection(
             this.toClientBuilder(),

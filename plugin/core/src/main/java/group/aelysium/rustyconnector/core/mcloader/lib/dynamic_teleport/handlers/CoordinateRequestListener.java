@@ -2,10 +2,10 @@ package group.aelysium.rustyconnector.core.mcloader.lib.dynamic_teleport.handler
 
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
 import group.aelysium.rustyconnector.core.mcloader.central.MCLoaderTinder;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketIdentification;
 import group.aelysium.rustyconnector.toolkit.mc_loader.central.IMCLoaderTinder;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketListener;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.PacketListener;
 import group.aelysium.rustyconnector.core.lib.packets.QueueTPAPacket;
 import group.aelysium.rustyconnector.core.TinderAdapterForCore;
 import group.aelysium.rustyconnector.core.mcloader.lib.lang.MCLoaderLang;

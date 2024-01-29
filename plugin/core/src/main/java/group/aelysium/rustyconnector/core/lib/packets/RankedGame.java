@@ -3,8 +3,7 @@ package group.aelysium.rustyconnector.core.lib.packets;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketParameter;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 
 import java.util.*;
 

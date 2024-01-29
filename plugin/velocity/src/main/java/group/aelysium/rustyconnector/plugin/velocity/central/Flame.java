@@ -12,10 +12,9 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.family.ranked_family.Ra
 import group.aelysium.rustyconnector.plugin.velocity.lib.magic_link.packet_handlers.HandshakeDisconnectListener;
 import group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.commands.CommandLeave;
 import group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.packet_handlers.RankedGameEndListener;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnection;
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnector;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.VelocityPacketBuilder;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.messenger.MessengerConnection;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.messenger.IMessengerConnector;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.toolkit.velocity.central.VelocityFlame;
 import group.aelysium.rustyconnector.toolkit.velocity.events.mc_loader.RegisterEvent;
 import group.aelysium.rustyconnector.toolkit.velocity.events.mc_loader.UnregisterEvent;
@@ -149,7 +148,7 @@ public class Flame extends VelocityFlame<CoreServiceHandler> {
             logger.send(Component.text("Initializing 50%...", NamedTextColor.DARK_GRAY));
             initialize.networkWhitelist(inject(defaultConfig, langService, configService));
             logger.send(Component.text("Initializing 60%...", NamedTextColor.DARK_GRAY));
-            initialize.magicLink(inject(defaultConfig, serverService, connectors.d1(), langService, configService, familyService));
+            MagicLinkService magicLinkService = initialize.magicLink(inject(defaultConfig, serverService, connectors.d1(), langService, configService, familyService));
             initialize.webhooks(inject(langService, configService));
 
             logger.send(Component.text("Initializing 70%...", NamedTextColor.DARK_GRAY));
@@ -163,6 +162,7 @@ public class Flame extends VelocityFlame<CoreServiceHandler> {
 
             Flame flame = new Flame(uuid, new Version(version), memberKey.orElse(new char[0]), initialize.getServices(), initialize.getBootOutput());
 
+            magicLinkService.startHeartbeat(serverService, flame);
             initialize.events(plugin, eventManager);
             initialize.commands(inject(flame, logger, messageCacheService));
             logger.send(Component.text("Initializing 100%...", NamedTextColor.DARK_GRAY));
@@ -316,7 +316,7 @@ class Initialize {
         bootOutput.add(Component.text("Booting Messenger...", NamedTextColor.DARK_GRAY));
 
         messenger.connect();
-        IMessengerConnection connection = messenger.connection().orElseThrow();
+        MessengerConnection connection = messenger.connection().orElseThrow();
 
         connection.listen(new HandshakePingListener(this.api));
         connection.listen(new HandshakeDisconnectListener(this.api));
@@ -327,7 +327,7 @@ class Initialize {
 
         connection.listen(new RankedGameEndListener(this.api));
 
-        ((RedisConnection) connection).startListening(dependencies.d2(), dependencies.d3(), Packet.Node.proxy(uuid));
+        ((RedisConnection) connection).startListening(dependencies.d2(), dependencies.d3(), Packet.Target.proxy(uuid));
         bootOutput.add(Component.text("Finished booting Messenger.", NamedTextColor.GREEN));
 
         bootOutput.add(Component.text("Booting MicroStream MariaDB driver...", NamedTextColor.DARK_GRAY));
@@ -459,7 +459,7 @@ class Initialize {
         return messageCacheService;
     }
 
-    public void magicLink(DependencyInjector.DI6<DefaultConfig, ServerService, IMessengerConnector, LangService, ConfigService, FamilyService> deps) {
+    public MagicLinkService magicLink(DependencyInjector.DI6<DefaultConfig, ServerService, IMessengerConnector, LangService, ConfigService, FamilyService> deps) {
         bootOutput.add(Component.text("Building magic link service...", NamedTextColor.DARK_GRAY));
 
         Map<String, MagicLinkService.MagicLinkMCLoaderSettings> configs = new HashMap<>();
@@ -497,10 +497,7 @@ class Initialize {
 
         bootOutput.add(Component.text("Finished building magic link service.", NamedTextColor.GREEN));
 
-
-        bootOutput.add(Component.text("Booting magic link service...", NamedTextColor.DARK_GRAY));
-        magicLinkService.startHeartbeat(deps.d2());
-        bootOutput.add(Component.text("Finished booting magic link service.", NamedTextColor.GREEN));
+        return magicLinkService;
     }
 
     public ServerService servers(DefaultConfig defaultConfig) {

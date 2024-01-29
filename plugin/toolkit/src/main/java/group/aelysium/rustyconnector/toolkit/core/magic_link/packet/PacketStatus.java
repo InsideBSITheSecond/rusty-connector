@@ -1,4 +1,4 @@
-package group.aelysium.rustyconnector.toolkit.core.packet;
+package group.aelysium.rustyconnector.toolkit.core.magic_link.packet;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 

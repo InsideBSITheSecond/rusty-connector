@@ -2,12 +2,11 @@ package group.aelysium.rustyconnector.toolkit.velocity.central;
 
 import group.aelysium.rustyconnector.toolkit.core.config.IConfigService;
 import group.aelysium.rustyconnector.toolkit.core.events.EventManager;
-import group.aelysium.rustyconnector.toolkit.core.packet.VelocityPacketBuilder;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.interfaces.IServiceableService;
 import group.aelysium.rustyconnector.toolkit.velocity.dynamic_teleport.IDynamicTeleportServiceHandler;
 import group.aelysium.rustyconnector.toolkit.velocity.family.IFamilyService;
 import group.aelysium.rustyconnector.toolkit.velocity.friends.IFriendsService;
-import group.aelysium.rustyconnector.toolkit.velocity.magic_link.IMagicLink;
+import group.aelysium.rustyconnector.toolkit.velocity.magic_link.IMagicLinkService;
 import group.aelysium.rustyconnector.toolkit.velocity.parties.IPartyService;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayerService;
 import group.aelysium.rustyconnector.toolkit.velocity.server.IServerService;
@@ -62,13 +61,11 @@ public interface ICoreServiceHandler extends IServiceHandler {
     IWhitelistService whitelist();
 
     /**
-     * Gets the {@link IMagicLink dynamic teleport service}.
+     * Gets the {@link IMagicLinkService dynamic teleport service}.
      * The dynamic teleport module may not always be enabled, hence this returns an {@link Optional<IServiceableService<IDynamicTeleportServiceHandler>>}
      * @return {@link Optional<IServiceableService>}
      */
-    IMagicLink magicLink();
-
-    VelocityPacketBuilder packetBuilder();
+    IMagicLinkService magicLink();
 
     /**
      * Gets the {@link IPartyService party service}.

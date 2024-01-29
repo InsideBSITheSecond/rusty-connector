@@ -2,7 +2,7 @@ package group.aelysium.rustyconnector.plugin.velocity.lib.dynamic_teleport.tpa;
 
 import com.velocitypowered.api.command.CommandManager;
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
+import group.aelysium.rustyconnector.toolkit.core.magic_link.packet.Packet;
 import group.aelysium.rustyconnector.toolkit.velocity.dynamic_teleport.tpa.ITPACleaningService;
 import group.aelysium.rustyconnector.toolkit.velocity.dynamic_teleport.tpa.ITPAHandler;
 import group.aelysium.rustyconnector.toolkit.velocity.dynamic_teleport.tpa.ITPAService;
@@ -83,14 +83,11 @@ public class TPAService implements ITPAService {
     public void tpaSendPlayer(IPlayer source, IPlayer target, IMCLoader targetServer) {
         Tinder api = Tinder.get();
 
-        Packet message = api.services().packetBuilder().newBuilder()
+        Packet message = api.services().magicLink().packetManager().newPacketBuilder()
                 .identification(BuiltInIdentifications.QUEUE_TPA)
-                .sendingToMCLoader(targetServer.uuid())
                 .parameter(QueueTPAPacket.Parameters.TARGET_USERNAME, target.username())
                 .parameter(QueueTPAPacket.Parameters.SOURCE_USERNAME, source.username())
-                .build();
-
-        api.services().magicLink().connection().orElseThrow().publish(message);
+                .sendTo(Packet.Target.mcLoader(targetServer.uuid()));
 
         try {
             if (source.server().orElseThrow().equals(targetServer)) return;

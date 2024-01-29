@@ -1,6 +1,5 @@
 package group.aelysium.rustyconnector.toolkit.velocity.central;
 
-import group.aelysium.rustyconnector.toolkit.core.messenger.IMessengerConnector;
 import group.aelysium.rustyconnector.toolkit.velocity.util.Version;
 import group.aelysium.rustyconnector.toolkit.core.serviceable.ServiceableService;
 import net.kyori.adventure.text.Component;
