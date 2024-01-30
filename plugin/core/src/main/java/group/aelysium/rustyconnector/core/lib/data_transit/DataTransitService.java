@@ -10,24 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataTransitService implements Service {
-    private final boolean hasBlacklist;
-    private final boolean hasWhitelist;
     private final int maxLength;
-    private final List<InetSocketAddress> blacklist = new ArrayList<>();
-    private final List<InetSocketAddress> whitelist = new ArrayList<>();
 
-    public DataTransitService(boolean hasBlacklist, boolean hasWhitelist, int maxLength) {
-        this.hasBlacklist = hasBlacklist;
-        this.hasWhitelist = hasWhitelist;
+    public DataTransitService(int maxLength) {
         this.maxLength = maxLength;
-    }
-
-    public void blacklistAddress(InetSocketAddress address) {
-        this.blacklist.add(address);
-    }
-
-    public void whitelistAddress(InetSocketAddress address) {
-        this.whitelist.add(address);
     }
 
     /**
@@ -43,19 +29,9 @@ public class DataTransitService implements Service {
 
         if(message.toString().length() > this.maxLength)
             throw new BlockedMessageException("The message is to long!");
-
-        if(hasBlacklist)
-            if(this.blacklist.contains(message.sender()))
-                throw new BlockedMessageException("The message was sent from a blacklisted IP Address!");
-
-        if(hasWhitelist)
-            if(!this.whitelist.contains(message.sender()))
-                throw new BlockedMessageException("The message was sent from an IP Address that isn't whitelisted!");
     }
 
     @Override
     public void kill() {
-        this.blacklist.clear();
-        this.whitelist.clear();
     }
 }

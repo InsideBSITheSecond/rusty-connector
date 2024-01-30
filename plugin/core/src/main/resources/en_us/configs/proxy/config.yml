@@ -84,17 +84,3 @@ whitelist:
 # The name of the whitelist configuration file in your "whitelists" folder.
 #
     name: "whitelist-template"
-
-magic-link:
-#
-# Amount of time, in seconds, that a server can go without pinging the proxy.
-# If a server doesn't ping the proxy in this time, it will be declared stale
-# and be unregistered from the proxy.
-#
-    server-timeout: 15
-
-#
-# Amount of time, in seconds, that a server should wait to ping the proxy.
-# This setting cannot be higher than "server-timeout".
-#
-    server-ping-interval: 10

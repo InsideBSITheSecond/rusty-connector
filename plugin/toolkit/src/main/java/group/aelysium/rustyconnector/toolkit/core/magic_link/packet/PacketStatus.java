@@ -7,6 +7,7 @@ public enum PacketStatus {
     AUTH_DENIAL, // If the message didn't contain the proper credentials (IP Address (for message tunnel), private-key, over max length, etc)
     PARSING_ERROR, // If the message failed to be parsed
     TRASHED, // If the message isn't intended for us.
+    MISPLACED, // The packet wasn't addressed to us.
     ACCEPTED, // Just cause a message was accepted doesn't mean it was processed. It could still cause an error
     EXECUTING_ERROR, // If the message failed to be parsed
     EXECUTED; // The message has successfully processed and handled.
