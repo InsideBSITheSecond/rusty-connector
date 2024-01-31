@@ -1,6 +1,7 @@
 package group.aelysium.rustyconnector.plugin.velocity.lib.family.static_family;
 
 import group.aelysium.rustyconnector.core.lib.exception.NoOutputException;
+import group.aelysium.rustyconnector.core.lib.lang.LanguageResolver;
 import group.aelysium.rustyconnector.plugin.velocity.event_handlers.EventDispatch;
 import group.aelysium.rustyconnector.plugin.velocity.lib.config.ConfigService;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.Family;
@@ -14,6 +15,7 @@ import group.aelysium.rustyconnector.toolkit.velocity.events.player.FamilyPreJoi
 import group.aelysium.rustyconnector.toolkit.velocity.family.IFamily;
 import group.aelysium.rustyconnector.toolkit.velocity.family.UnavailableProtocol;
 import group.aelysium.rustyconnector.core.lib.lang.LangService;
+import group.aelysium.rustyconnector.toolkit.velocity.family.scalar_family.IRootFamily;
 import group.aelysium.rustyconnector.toolkit.velocity.family.static_family.IServerResidence;
 import group.aelysium.rustyconnector.toolkit.velocity.family.static_family.IStaticFamily;
 import group.aelysium.rustyconnector.toolkit.velocity.load_balancing.AlgorithmType;
@@ -34,6 +36,7 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -201,6 +204,49 @@ public class StaticFamily extends Family implements IStaticFamily {
         @Override
         public Request connect(IPlayer player) {
             throw new RuntimeException("Don't use HomeServer#connect(IPlayer)! Instead use HomeServer#connect(IPlayer, IStaticFamily)");
+        }
+    }
+
+    public class Print extends Family.Print {
+        public Print() {
+            super();
+        }
+
+        public Component profile(boolean lockedServers) {
+            // Parent Family
+            IRootFamily rootFamily = Tinder.get().services().family().rootFamily();
+            String parentFamilyName = rootFamily.id();
+            try {
+                parentFamilyName = Objects.requireNonNull(StaticFamily.this.parent()).id();
+            } catch (Exception ignore) {}
+            if(StaticFamily.this.equals(rootFamily)) parentFamilyName = "none";
+
+            // Compile residence expiration
+            LiquidTimestamp expiration = StaticFamily.this.homeServerExpiration();
+            String homeServerExpiration = "NEVER";
+            if(expiration != null) homeServerExpiration = expiration.toString();
+
+            // Compile Persistence
+            String persistence = "Disabled";
+            if(StaticFamily.this.loadBalancer().persistent())
+                persistence = StaticFamily.this.loadBalancer().attempts() + " Attempts";
+
+            Component parameters = resolver.getArray(
+                    "proxy.family.static.panel.parameters",
+                    LanguageResolver.tagHandler("display_name", StaticFamily.this.displayName()),
+                    LanguageResolver.tagHandler("parent_family_name", parentFamilyName),
+                    LanguageResolver.tagHandler("player_count", StaticFamily.this.playerCount()),
+
+                    LanguageResolver.tagHandler("residence_expiration", homeServerExpiration),
+                    LanguageResolver.tagHandler("servers_count", StaticFamily.this.loadBalancer().size()),
+                    LanguageResolver.tagHandler("servers_open", StaticFamily.this.loadBalancer().size(false)),
+                    LanguageResolver.tagHandler("servers_locked", StaticFamily.this.loadBalancer().size(true)),
+
+                    LanguageResolver.tagHandler("load_balancing_algorithm", StaticFamily.this.loadBalancer()),
+                    LanguageResolver.tagHandler("load_balancing_weighted", StaticFamily.this.loadBalancer().weighted()),
+                    LanguageResolver.tagHandler("load_balancing_persistence", persistence)
+            );
+            return this.profile(parameters, lockedServers);
         }
     }
 }

@@ -18,6 +18,12 @@ public interface IFamily extends PlayerConnectable {
     String displayName();
 
     /**
+     * Gets the display name of this family if it exists.
+     * If it doesn't exist, gets the id.
+     */
+    String idOrDisplayName();
+
+    /**
      * Get a server that is a part of the family.
      * @param uuid The uuid of the server to get.
      * @return A found server or `null` if there's no match.

@@ -29,10 +29,6 @@ public class MCLoaderLang extends Lang {
 
     public final static String STATUS = resolver().getRaw("core.single_word.status");
 
-    public final static Component BORDER = text("█████████████████████████████████████████████████████████████████████████████████████████████████", DARK_GRAY);
-
-    public final static Component SPACING = text("");
-
     public final static Message WORDMARK_USAGE = () -> ASCIIAlphabet.generate("usage");
 
     public final static Message WORDMARK_MESSAGE = () -> ASCIIAlphabet.generate("message");

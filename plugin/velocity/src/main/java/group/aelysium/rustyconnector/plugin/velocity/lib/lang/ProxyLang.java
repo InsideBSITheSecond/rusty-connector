@@ -59,17 +59,9 @@ public class ProxyLang extends Lang {
     public final static String IGNORE = resolver().getRaw("core.single_word.ignore");
     public final static String DATE = resolver().getRaw("core.single_word.date");
 
-    public final static Component BORDER = text("█████████████████████████████████████████████████████████████████████████████████████████████████", DARK_GRAY);
-
-    public final static Component SPACING = text("");
-
     public final static Component UNKNOWN_COMMAND = text(resolver().getRaw("core.unknown_command"));
     public final static Component NO_PERMISSION = text(resolver().getRaw("core.no_permission"));
     public final static Component INTERNAL_ERROR = resolver().get("core.internal_error");
-
-    public final static Component WORDMARK_USAGE = ASCIIAlphabet.generate("usage");
-
-    public final static Component WORDMARK_MESSAGE = ASCIIAlphabet.generate("message");
     public final static Component SERVER_ALREADY_CONNECTED = resolver().get("proxy.server.already_connected");
     public final static ParameterizedMessage1<String> NO_PLAYER = (username) ->
             resolver().get("core.no_player", LanguageResolver.tagHandler("username", username));
@@ -214,78 +206,52 @@ public class ProxyLang extends Lang {
                     ASCIIAlphabet.generate("families")
             );
 
-    public final static Component RC_ROOT_USAGE = join(
-            newlines(),
-            BORDER,
-            SPACING,
-            WORDMARK_USAGE.color(AQUA),
-            SPACING,
-            resolver().getArray("proxy.root.usage.description"),
-            SPACING,
-            BORDER,
-            SPACING,
-            text("rc message", AQUA),
-            resolver().get("proxy.root.usage.command_description.message"),
-            SPACING,
-            text("rc reload", GOLD),
-            resolver().get("proxy.root.usage.command_description.reload"),
-            SPACING,
-            text("family", AQUA),
-            resolver().get("proxy.root.usage.command_description.family"),
-            SPACING,
-            text("send", AQUA),
-            resolver().get("proxy.root.usage.command_description.send"),
-            SPACING,
-            BORDER
-    );
+    public final static Component RC_ROOT_USAGE = WindowBuilder.create()
+            .header("usage")
+            .section(
+                    text("rc message", AQUA),
+                    resolver().get("proxy.root.usage.command_description.message"),
+                    SPACING,
+                    text("rc reload", GOLD),
+                    resolver().get("proxy.root.usage.command_description.reload"),
+                    SPACING,
+                    text("family", AQUA),
+                    resolver().get("proxy.root.usage.command_description.family"),
+                    SPACING,
+                    text("send", AQUA),
+                    resolver().get("proxy.root.usage.command_description.send")
+            )
+            .build();
 
-    public final static Component RC_MESSAGE_ROOT_USAGE = join(
-            newlines(),
-            BORDER,
-            SPACING,
-            WORDMARK_USAGE.color(AQUA),
-            SPACING,
-            BORDER,
-            SPACING,
-            text("/rc message get <Message ID>", AQUA),
-            resolver().get("proxy.message.usage.get"),
-            SPACING,
-            text("/rc message list <page number>", AQUA),
-            resolver().get("proxy.message.usage.list"),
-            SPACING,
-            BORDER
-    );
+    public final static Component RC_MESSAGE_ROOT_USAGE = WindowBuilder.create()
+                    .header("usage", AQUA)
+                    .section(
+                            text("/rc message get <Message ID>", AQUA),
+                            resolver().get("proxy.message.usage.get"),
+                            SPACING,
+                            text("/rc message list <page number>", AQUA),
+                            resolver().get("proxy.message.usage.list")
+                    )
+                    .build();
 
-    public final static Component RC_SEND_USAGE = join(
-            newlines(),
-            BORDER,
-            SPACING,
-            WORDMARK_USAGE.color(AQUA),
-            SPACING,
-            BORDER,
-            SPACING,
-            text("/rc send <username> <family id>", GOLD),
-            resolver().get("proxy.send.usage.family"),
-            SPACING,
-            text("/rc send server <username> <server id>", GOLD),
-            resolver().getArray("proxy.send.usage.server"),
-            SPACING,
-            BORDER
-    );
+    public final static Component RC_SEND_USAGE = WindowBuilder.create()
+            .header("usage", AQUA)
+            .section(
+                    text("/rc send <username> <family id>", GOLD),
+                    resolver().get("proxy.send.usage.family"),
+                    SPACING,
+                    text("/rc send server <username> <server id>", GOLD),
+                    resolver().getArray("proxy.send.usage.server")
+            )
+            .build();
 
-    public final static Component RC_MESSAGE_GET_USAGE = join(
-            newlines(),
-            BORDER,
-            SPACING,
-            WORDMARK_USAGE.color(AQUA),
-            SPACING,
-            BORDER,
-            SPACING,
-            text("/rc message get <Message ID>",AQUA),
-            resolver().get("proxy.message.usage.get"),
-            SPACING,
-            BORDER
-    );
+    public final static Component RC_MESSAGE_GET_USAGE = WindowBuilder.create()
+            .header("usage", AQUA)
+            .section(
+                    text("/rc message get <Message ID>",AQUA),
+                    resolver().get("proxy.message.usage.get")
+            )
+            .build();
 
     public final static ParameterizedMessage1<String> RC_SEND_NO_PLAYER = username ->
             resolver().get("proxy.send.no_player", LanguageResolver.tagHandler("username", username));
@@ -295,336 +261,18 @@ public class ProxyLang extends Lang {
             resolver().get("proxy.send.no_server", LanguageResolver.tagHandler("server_name", serverName));
     public final static Message RC_SEND_SAME_FAMILY = () -> resolver().get("proxy.send.same_family");
 
-    public final static ParameterizedMessage1<CacheableMessage> RC_MESSAGE_GET_MESSAGE = (message) -> join(
-            newlines(),
-            BORDER,
-            SPACING,
-            WORDMARK_MESSAGE.color(AQUA),
-            SPACING,
-            BORDER,
-            SPACING,
-            text(STATUS+": " + message.getSentence().name(), message.getSentence().color()),
-            text(REASON+": " + message.getSentenceReason(), message.getSentence().color()),
-            SPACING,
-            text(ID+": ", message.getSentence().color()).append(text(message.getSnowflake(), GRAY)),
-            text(TIMESTAMP+": ", message.getSentence().color()).append(text(message.getDate().toString(), GRAY)),
-            text(CONTENTS+": ", message.getSentence().color()).append(text(message.getContents(), GRAY)),
-            SPACING
-    );
-
-    public final static Message RC_FAMILY = () -> {
-        Tinder api = Tinder.get();
-        Component families = text("");
-        for (IFamily family : api.services().family().dump()) {
-            if(family instanceof RootFamily)
-                families = families.append(text("["+family.id()+"*] ").color(BLUE));
-            if(family instanceof ScalarFamily)
-                families = families.append(text("["+family.id()+"] ").color(BLUE));
-            if(family instanceof StaticFamily)
-                families = families.append(text("["+family.id()+"] ").color(DARK_GREEN));
-            if(family instanceof RankedFamily)
-                families = families.append(text("["+family.id()+"] ").color(YELLOW));
-        }
-
-        return join(
-                newlines(),
-                BORDER,
-                SPACING,
-                WORDMARK_REGISTERED_FAMILIES.color(AQUA),
-                SPACING,
-                BORDER,
-                SPACING,
-                resolver().getArray("proxy.family.description"),
-                families,
-                SPACING,
-                BORDER,
-                SPACING,
-                text("/rc family <family id>",DARK_AQUA),
-                resolver().get("proxy.family.details_usage"),
-                SPACING,
-                BORDER
-        );
-    };
-
-    public final static ParameterizedMessage2<ScalarFamily, Boolean> RC_SCALAR_FAMILY_INFO = (family, locked) -> {
-        Component servers = text("");
-        int i = 0;
-
-        if(family.registeredServers() == null) servers = resolver().get("proxy.family.generic.servers.no_registered_servers");
-        else if(family.registeredServers().size() == 0) servers = resolver().get("proxy.family.generic.servers.no_registered_servers");
-        else if(family.loadBalancer().size() == 0) servers = resolver().get("proxy.family.generic.servers.no_unlocked_servers");
-        else {
-            List<IMCLoader> serverList;
-            if(locked)
-                serverList = family.loadBalancer().lockedServers();
-            else
-                serverList = family.loadBalancer().openServers();
-
-            for (IMCLoader server : serverList) {
-                Component serverEntry = resolver().get(
-                        "proxy.family.generic.servers.details",
-                        LanguageResolver.tagHandler("index_number", i + 1),
-                        LanguageResolver.tagHandler("server_name", server.uuidOrDisplayName()),
-                        LanguageResolver.tagHandler("server_address", AddressUtil.addressToString(server.registeredServer().getServerInfo().getAddress())),
-                        LanguageResolver.tagHandler("player_count", server.playerCount()),
-                        LanguageResolver.tagHandler("player_soft_cap", server.softPlayerCap()),
-                        LanguageResolver.tagHandler("player_hard_cap", server.hardPlayerCap()),
-                        LanguageResolver.tagHandler("server_weight", server.weight())
-                );
-
-                if(family.loadBalancer().index() == i && !locked)
-                    serverEntry = serverEntry.color(GREEN);
-                else
-                    serverEntry = serverEntry.color(GRAY);
-
-                servers = servers.append(serverEntry).append(newline());
-
-                i++;
-            }
-        }
-
-        IRootFamily rootFamily = Tinder.get().services().family().rootFamily();
-        String parentFamilyName = rootFamily.id();
-        try {
-            parentFamilyName = Objects.requireNonNull(family.parent()).id();
-        } catch (Exception ignore) {}
-        if(family.equals(rootFamily)) parentFamilyName = "none";
-
-        String persistence = "Disabled";
-        if(family.loadBalancer().persistent())
-            persistence = family.loadBalancer().attempts() + " Attempts";
-
-        return join(
-                newlines(),
-                BORDER,
-                SPACING,
-                ASCIIAlphabet.generate(family.id(), AQUA),
-                SPACING,
-                BORDER,
-                SPACING,
-                resolver().getArray(
-                        "proxy.family.scalar.panel.info",
-                        LanguageResolver.tagHandler("display_name", family.displayName()),
-                        LanguageResolver.tagHandler("parent_family_name", parentFamilyName),
-                        LanguageResolver.tagHandler("players_count", family.playerCount()),
-
-                        LanguageResolver.tagHandler("servers_count", family.loadBalancer().size()),
-                        LanguageResolver.tagHandler("servers_open", family.loadBalancer().size(false)),
-                        LanguageResolver.tagHandler("servers_locked", family.loadBalancer().size(true)),
-
-                        LanguageResolver.tagHandler("load_balancing_algorithm", family.loadBalancer()),
-                        LanguageResolver.tagHandler("load_balancing_weighted", family.loadBalancer().weighted()),
-                        LanguageResolver.tagHandler("load_balancing_persistence", persistence)
-                ),
-                SPACING,
-                BORDER,
-                SPACING,
-                resolver().get("proxy.family.generic.servers.open_servers"),
-                SPACING,
-                text("/rc family <family id> sort", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.sort"),
-                SPACING,
-                text("/rc family <family id> resetIndex", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.reset_index"),
-                SPACING,
-                text("/rc family <family id> locked", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.locked"),
-                SPACING,
-                servers,
-                SPACING,
-                BORDER
-        );
-    };
-
-    public final static ParameterizedMessage2<StaticFamily, Boolean> RC_STATIC_FAMILY_INFO = (family, locked) -> {
-        Component servers = text("");
-        int i = 0;
-
-        if(family.registeredServers() == null) servers = resolver().get("proxy.family.generic.servers.no_registered_servers");
-        else if(family.registeredServers().size() == 0) servers = resolver().get("proxy.family.generic.servers.no_registered_servers");
-        else if(family.loadBalancer().size() == 0) servers = resolver().get("proxy.family.generic.servers.no_unlocked_servers");
-        else {
-            List<IMCLoader> serverList;
-            if(locked)
-                serverList = family.loadBalancer().lockedServers();
-            else
-                serverList = family.loadBalancer().openServers();
-
-            for (IMCLoader server : serverList) {
-                Component serverEntry = resolver().get(
-                        "proxy.family.generic.servers.details",
-                        LanguageResolver.tagHandler("index_number", i + 1),
-                        LanguageResolver.tagHandler("server_name", server.uuidOrDisplayName()),
-                        LanguageResolver.tagHandler("server_address", AddressUtil.addressToString(server.registeredServer().getServerInfo().getAddress())),
-                        LanguageResolver.tagHandler("player_count", server.playerCount()),
-                        LanguageResolver.tagHandler("player_soft_cap", server.softPlayerCap()),
-                        LanguageResolver.tagHandler("player_hard_cap", server.hardPlayerCap()),
-                        LanguageResolver.tagHandler("server_weight", server.weight())
-                );
-
-                if(family.loadBalancer().index() == i && !locked)
-                    serverEntry = serverEntry.color(GREEN);
-                else
-                    serverEntry = serverEntry.color(GRAY);
-
-                servers = servers.append(serverEntry).append(newline());
-
-                i++;
-            }
-        }
-
-        // Compile residence expiration
-        LiquidTimestamp expiration = family.homeServerExpiration();
-        String homeServerExpiration = "NEVER";
-        if(expiration != null) homeServerExpiration = expiration.toString();
-
-        // Compile Persistence
-        String persistence = "Disabled";
-        if(family.loadBalancer().persistent())
-            persistence = family.loadBalancer().attempts() + " Attempts";
-
-        return join(
-                newlines(),
-                BORDER,
-                SPACING,
-                ASCIIAlphabet.generate(family.id(), AQUA),
-                SPACING,
-                BORDER,
-                SPACING,
-                resolver().getArray(
-                        "proxy.family.static.panel.info",
-                        LanguageResolver.tagHandler("display_name", family.displayName()),
-                        LanguageResolver.tagHandler("parent_family_name", family.parent().id()),
-                        LanguageResolver.tagHandler("player_count", family.playerCount()),
-
-                        LanguageResolver.tagHandler("residence_expiration", homeServerExpiration),
-                        LanguageResolver.tagHandler("servers_count", family.loadBalancer().size()),
-                        LanguageResolver.tagHandler("servers_open", family.loadBalancer().size(false)),
-                        LanguageResolver.tagHandler("servers_locked", family.loadBalancer().size(true)),
-
-                        LanguageResolver.tagHandler("load_balancing_algorithm", family.loadBalancer()),
-                        LanguageResolver.tagHandler("load_balancing_weighted", family.loadBalancer().weighted()),
-                        LanguageResolver.tagHandler("load_balancing_persistence", persistence)
-                ),
-                SPACING,
-                BORDER,
-                SPACING,
-                resolver().get("proxy.family.generic.servers.open_servers"),
-                SPACING,
-                text("/rc family <family id> sort", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.sort"),
-                SPACING,
-                text("/rc family <family id> resetIndex", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.reset_index"),
-                SPACING,
-                text("/rc family <family id> locked", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.locked"),
-                SPACING,
-                servers,
-                SPACING,
-                BORDER
-        );
-    };
+    public final static ParameterizedMessage1<CacheableMessage> RC_MESSAGE_GET_MESSAGE = (message) -> WindowBuilder.create()
+            .section(
+                    text(STATUS+": " + message.getSentence().name(), message.getSentence().color()),
+                    text(REASON+": " + message.getSentenceReason(), message.getSentence().color()),
+                    SPACING,
+                    text(ID+": ", message.getSentence().color()).append(text(message.getSnowflake(), GRAY)),
+                    text(TIMESTAMP+": ", message.getSentence().color()).append(text(message.getDate().toString(), GRAY)),
+                    text(CONTENTS+": ", message.getSentence().color()).append(text(message.getContents(), GRAY))
+            )
+            .build();
 
     public final static Message RANKED_FAMILY_PARTY_DENIAL = () -> resolver().get("proxy.family.ranked.in_party");
-    public final static ParameterizedMessage2<RankedFamily, Boolean> RC_RANKED_FAMILY_INFO = (family, locked) -> {
-        Component servers = text("");
-        int i = 0;
-
-        if(family.registeredServers() == null) servers = resolver().get("proxy.family.generic.servers.no_registered_servers");
-        else if(family.registeredServers().size() == 0) servers = resolver().get("proxy.family.generic.servers.no_registered_servers");
-        else if(family.loadBalancer().size() == 0) servers = resolver().get("proxy.family.generic.servers.no_unlocked_servers");
-        else {
-            List<IMCLoader> serverList;
-            if(locked)
-                serverList = family.loadBalancer().lockedServers();
-            else
-                serverList = family.loadBalancer().openServers();
-
-            for (IMCLoader server : serverList) {
-                Component serverEntry = resolver().get(
-                        "proxy.family.generic.servers.details",
-                        LanguageResolver.tagHandler("index_number", i + 1),
-                        LanguageResolver.tagHandler("server_name", server.uuidOrDisplayName()),
-                        LanguageResolver.tagHandler("server_address", AddressUtil.addressToString(server.registeredServer().getServerInfo().getAddress())),
-                        LanguageResolver.tagHandler("player_count", server.playerCount()),
-                        LanguageResolver.tagHandler("player_soft_cap", server.softPlayerCap()),
-                        LanguageResolver.tagHandler("player_hard_cap", server.hardPlayerCap()),
-                        LanguageResolver.tagHandler("server_weight", server.weight())
-                );
-
-                if(family.loadBalancer().index() == i && !locked)
-                    serverEntry = serverEntry.color(GREEN);
-                else
-                    serverEntry = serverEntry.color(GRAY);
-
-                servers = servers.append(serverEntry).append(newline());
-
-                i++;
-            }
-        }
-
-        String algorithm = "RANDOMIZE";
-        Matchmaker matchmaker = family.matchmaker();
-        if(matchmaker instanceof WinLoss) algorithm = "WIN_LOSS";
-        if(matchmaker instanceof WinRate) algorithm = "WIN_RATE";
-
-        int waitingPlayersCount = family.waitingPlayers();
-
-        String highest_ranking_player = "None";
-        try {
-            if(waitingPlayersCount == 0) highest_ranking_player = matchmaker.waitingPlayers().get(0).toString();
-            highest_ranking_player = matchmaker.waitingPlayers().get(waitingPlayersCount - 1).toString();
-        } catch (Exception ignore) {}
-        String lowest_ranking_player = "None";
-        try {
-            lowest_ranking_player = matchmaker.waitingPlayers().get(0).toString();
-        } catch (Exception ignore) {}
-
-        return join(
-                newlines(),
-                BORDER,
-                SPACING,
-                ASCIIAlphabet.generate(family.id(), AQUA),
-                SPACING,
-                BORDER,
-                SPACING,
-                resolver().getArray(
-                        "proxy.family.ranked.panel.info",
-                        LanguageResolver.tagHandler("display_name", family.displayName()),
-                        LanguageResolver.tagHandler("parent_family_name", family.parent().id()),
-
-                        LanguageResolver.tagHandler("player_count", family.playerCount()),
-                        LanguageResolver.tagHandler("active_players", family.activePlayers()),
-                        LanguageResolver.tagHandler("waiting_players", waitingPlayersCount),
-
-                        LanguageResolver.tagHandler("servers_count", family.loadBalancer().size()),
-                        LanguageResolver.tagHandler("servers_open", family.loadBalancer().size(false)),
-                        LanguageResolver.tagHandler("servers_locked", family.loadBalancer().size(true)),
-
-                        LanguageResolver.tagHandler("matchmaking_algorithm", algorithm),
-                        LanguageResolver.tagHandler("matchmaking_highest_player", highest_ranking_player),
-                        LanguageResolver.tagHandler("matchmaking_lowest_player", lowest_ranking_player)
-                ),
-                SPACING,
-                BORDER,
-                SPACING,
-                resolver().get("proxy.family.generic.servers.open_servers"),
-                SPACING,
-                text("/rc family <family id> sort", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.sort"),
-                SPACING,
-                text("/rc family <family id> resetIndex", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.reset_index"),
-                SPACING,
-                text("/rc family <family id> locked", GOLD),
-                resolver().get("proxy.family.generic.command_descriptions.locked"),
-                SPACING,
-                servers,
-                SPACING,
-                BORDER
-        );
-    };
 
     public final static Component MISSING_HOME_SERVER = resolver().get("proxy.family.static.residence.missing");
     public final static Component BLOCKED_STATIC_FAMILY_JOIN_ATTEMPT = resolver().get("proxy.family.static.residence.blocked_join_attempt");

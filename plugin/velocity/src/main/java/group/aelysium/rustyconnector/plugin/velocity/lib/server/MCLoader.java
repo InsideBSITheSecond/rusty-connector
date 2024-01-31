@@ -4,6 +4,9 @@ import com.velocitypowered.api.proxy.ConnectionRequestBuilder;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import group.aelysium.rustyconnector.core.lib.exception.NoOutputException;
+import group.aelysium.rustyconnector.core.lib.lang.Lang;
+import group.aelysium.rustyconnector.core.lib.lang.LanguageResolver;
+import group.aelysium.rustyconnector.core.lib.lang.printable.LangPrinter;
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
 import group.aelysium.rustyconnector.plugin.velocity.PluginLogger;
 import group.aelysium.rustyconnector.plugin.velocity.central.Tinder;
@@ -24,7 +27,9 @@ import group.aelysium.rustyconnector.toolkit.velocity.parties.ServerOverflowHand
 import group.aelysium.rustyconnector.toolkit.velocity.parties.SwitchPower;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
 import group.aelysium.rustyconnector.toolkit.velocity.server.IMCLoader;
+import group.aelysium.rustyconnector.toolkit.velocity.util.AddressUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetSocketAddress;
@@ -34,6 +39,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
+import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
 
 public class MCLoader implements IMCLoader {
     private final UUID uuid;
@@ -428,5 +437,72 @@ public class MCLoader implements IMCLoader {
         if (o == null || getClass() != o.getClass()) return false;
         MCLoader mcLoader = (MCLoader) o;
         return Objects.equals(uuid, mcLoader.uuid());
+    }
+
+    public class Print extends LangPrinter {
+        public Print() {
+            super(Tinder.get().lang().resolver());
+        }
+
+        public Component chip() {
+            boolean hasDisplayName = MCLoader.this.displayName != null;
+
+            if(hasDisplayName)
+                return resolver.get(
+                        "proxy.mcloader.chip",
+                        LanguageResolver.tagHandler("server_name", MCLoader.this.displayName),
+                        LanguageResolver.tagHandler("server_uuid", MCLoader.this.uuid()),
+                        LanguageResolver.tagHandler("server_address", AddressUtil.addressToString(MCLoader.this.registeredServer().getServerInfo().getAddress())),
+                        LanguageResolver.tagHandler("player_count", MCLoader.this.playerCount()),
+                        LanguageResolver.tagHandler("player_soft_cap", MCLoader.this.softPlayerCap()),
+                        LanguageResolver.tagHandler("player_hard_cap", MCLoader.this.hardPlayerCap()),
+                        LanguageResolver.tagHandler("server_weight", MCLoader.this.weight())
+                );
+            else
+                return resolver.get(
+                        "proxy.mcloader.chip_display_name",
+                        LanguageResolver.tagHandler("server_name", MCLoader.this.uuidOrDisplayName()),
+                        LanguageResolver.tagHandler("server_address", AddressUtil.addressToString(MCLoader.this.registeredServer().getServerInfo().getAddress())),
+                        LanguageResolver.tagHandler("player_count", MCLoader.this.playerCount()),
+                        LanguageResolver.tagHandler("player_soft_cap", MCLoader.this.softPlayerCap()),
+                        LanguageResolver.tagHandler("player_hard_cap", MCLoader.this.hardPlayerCap()),
+                        LanguageResolver.tagHandler("server_weight", MCLoader.this.weight())
+                );
+        }
+
+        public Component profile() {
+            String name = MCLoader.this.displayName;
+            if(name == null) name = "MCLoader";
+
+            String displayName = MCLoader.this.displayName;
+            if(displayName == null) displayName = "None";
+
+            Component players = text().build();
+            for (com.velocitypowered.api.proxy.Player player : MCLoader.this.registeredServer().getPlayersConnected())
+                players = players.appendNewline().append(
+                        resolver.get(
+                                "proxy.player.chip",
+                                LanguageResolver.tagHandler("username", player.getUsername()),
+                                LanguageResolver.tagHandler("uuid", player.getUniqueId().toString())
+                        )
+                );
+
+            return Lang.WindowBuilder.create()
+                    .header(name, AQUA)
+                    .section(
+                            resolver.get(
+                                    "proxy.mcloader.profile.parameters",
+                                    LanguageResolver.tagHandler("uuid", MCLoader.this.uuid),
+                                    LanguageResolver.tagHandler("display_name", displayName),
+                                    LanguageResolver.tagHandler("address", AddressUtil.addressToString(MCLoader.this.registeredServer().getServerInfo().getAddress())),
+                                    LanguageResolver.tagHandler("family_id", MCLoader.this.family.id()),
+                                    LanguageResolver.tagHandler("player_count", MCLoader.this.playerCount()),
+                                    LanguageResolver.tagHandler("soft_cap", MCLoader.this.softPlayerCap()),
+                                    LanguageResolver.tagHandler("hard_Cap", MCLoader.this.hardPlayerCap())
+                            )
+                    )
+                    .section()
+                    .build();
+        }
     }
 }

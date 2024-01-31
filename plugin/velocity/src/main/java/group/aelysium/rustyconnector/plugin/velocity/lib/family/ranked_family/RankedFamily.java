@@ -1,13 +1,17 @@
 package group.aelysium.rustyconnector.plugin.velocity.lib.family.ranked_family;
 
+import group.aelysium.rustyconnector.core.lib.lang.LanguageResolver;
 import group.aelysium.rustyconnector.plugin.velocity.lib.config.ConfigService;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.Family;
 import group.aelysium.rustyconnector.plugin.velocity.lib.config.configs.RankedFamilyConfig;
+import group.aelysium.rustyconnector.plugin.velocity.lib.family.scalar_family.ScalarFamily;
 import group.aelysium.rustyconnector.plugin.velocity.lib.lang.ProxyLang;
 import group.aelysium.rustyconnector.plugin.velocity.lib.load_balancing.LoadBalancer;
 import group.aelysium.rustyconnector.plugin.velocity.lib.config.configs.MatchMakerConfig;
 import group.aelysium.rustyconnector.plugin.velocity.lib.load_balancing.RoundRobin;
 import group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.matchmakers.Matchmaker;
+import group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.matchmakers.WinLoss;
+import group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.matchmakers.WinRate;
 import group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.storage.GamemodeRankManager;
 import group.aelysium.rustyconnector.plugin.velocity.lib.parties.Party;
 import group.aelysium.rustyconnector.plugin.velocity.lib.storage.StorageService;
@@ -15,6 +19,7 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.whitelist.WhitelistServ
 import group.aelysium.rustyconnector.toolkit.velocity.connection.ConnectionResult;
 import group.aelysium.rustyconnector.toolkit.velocity.family.IFamily;
 import group.aelysium.rustyconnector.toolkit.velocity.family.ranked_family.IRankedFamily;
+import group.aelysium.rustyconnector.toolkit.velocity.family.scalar_family.IRootFamily;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
 import group.aelysium.rustyconnector.toolkit.velocity.server.IMCLoader;
 import group.aelysium.rustyconnector.toolkit.velocity.server.IRankedMCLoader;
@@ -29,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import static group.aelysium.rustyconnector.toolkit.velocity.family.Metadata.RANKED_FAMILY_META;
@@ -161,6 +167,57 @@ public class RankedFamily extends Family implements IRankedFamily {
             this.matchmaker.add(request, result);
 
             return request;
+        }
+    }
+
+    public class Print extends Family.Print {
+        public Print() {
+            super();
+        }
+
+        public Component profile(boolean lockedServers) {
+            IRootFamily rootFamily = Tinder.get().services().family().rootFamily();
+            String parentFamilyName = rootFamily.id();
+            try {
+                parentFamilyName = Objects.requireNonNull(RankedFamily.this.parent()).id();
+            } catch (Exception ignore) {}
+            if(RankedFamily.this.equals(rootFamily)) parentFamilyName = "none";
+
+            String algorithm = "RANDOMIZE";
+            Matchmaker matchmaker = RankedFamily.this.matchmaker();
+            if(matchmaker instanceof WinLoss) algorithm = "WIN_LOSS";
+            if(matchmaker instanceof WinRate) algorithm = "WIN_RATE";
+
+            int waitingPlayersCount = RankedFamily.this.waitingPlayers();
+
+            String highest_ranking_player = "None";
+            try {
+                if(waitingPlayersCount == 0) highest_ranking_player = matchmaker.waitingPlayers().get(0).toString();
+                highest_ranking_player = matchmaker.waitingPlayers().get(waitingPlayersCount - 1).toString();
+            } catch (Exception ignore) {}
+            String lowest_ranking_player = "None";
+            try {
+                lowest_ranking_player = matchmaker.waitingPlayers().get(0).toString();
+            } catch (Exception ignore) {}
+
+            Component parameters = resolver.getArray(
+                    "proxy.family.ranked.panel.parameters",
+                    LanguageResolver.tagHandler("display_name", RankedFamily.this.displayName()),
+                    LanguageResolver.tagHandler("parent_family_name", parentFamilyName),
+
+                    LanguageResolver.tagHandler("player_count", RankedFamily.this.playerCount()),
+                    LanguageResolver.tagHandler("active_players", RankedFamily.this.activePlayers()),
+                    LanguageResolver.tagHandler("waiting_players", waitingPlayersCount),
+
+                    LanguageResolver.tagHandler("servers_count", RankedFamily.this.loadBalancer().size()),
+                    LanguageResolver.tagHandler("servers_open", RankedFamily.this.loadBalancer().size(false)),
+                    LanguageResolver.tagHandler("servers_locked", RankedFamily.this.loadBalancer().size(true)),
+
+                    LanguageResolver.tagHandler("matchmaking_algorithm", algorithm),
+                    LanguageResolver.tagHandler("matchmaking_highest_player", highest_ranking_player),
+                    LanguageResolver.tagHandler("matchmaking_lowest_player", lowest_ranking_player)
+            );
+            return this.profile(parameters, lockedServers);
         }
     }
 }

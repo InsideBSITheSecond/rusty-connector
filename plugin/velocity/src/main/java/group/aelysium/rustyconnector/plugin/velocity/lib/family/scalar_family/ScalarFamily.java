@@ -1,5 +1,8 @@
 package group.aelysium.rustyconnector.plugin.velocity.lib.family.scalar_family;
 
+import group.aelysium.rustyconnector.core.lib.lang.Lang;
+import group.aelysium.rustyconnector.core.lib.lang.LanguageResolver;
+import group.aelysium.rustyconnector.core.lib.lang.printable.LangPrinter;
 import group.aelysium.rustyconnector.plugin.velocity.lib.config.ConfigService;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.Family;
 import group.aelysium.rustyconnector.plugin.velocity.lib.config.configs.LoadBalancerConfig;
@@ -7,6 +10,7 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.whitelist.WhitelistServ
 import group.aelysium.rustyconnector.toolkit.velocity.connection.ConnectionResult;
 import group.aelysium.rustyconnector.toolkit.velocity.family.Metadata;
 import group.aelysium.rustyconnector.core.lib.lang.LangService;
+import group.aelysium.rustyconnector.toolkit.velocity.family.scalar_family.IRootFamily;
 import group.aelysium.rustyconnector.toolkit.velocity.family.scalar_family.IScalarFamily;
 import group.aelysium.rustyconnector.toolkit.velocity.load_balancing.AlgorithmType;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
@@ -26,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,7 +38,6 @@ import static group.aelysium.rustyconnector.toolkit.velocity.family.Metadata.SCA
 import static group.aelysium.rustyconnector.toolkit.velocity.util.DependencyInjector.inject;
 
 public class ScalarFamily extends Family implements IScalarFamily {
-
     public ScalarFamily(Settings settings) {
         super(settings.id(), new Family.Settings(settings.displayName(), settings.loadBalancer(), settings.parentFamily(), settings.whitelist(), settings.connector()), SCALAR_FAMILY_META);
     }
@@ -174,6 +178,42 @@ public class ScalarFamily extends Family implements IScalarFamily {
 
                 return serverResponse;
             }
+        }
+    }
+
+    public class Print extends Family.Print {
+        public Print() {
+            super();
+        }
+
+        public Component profile(boolean lockedServers) {
+            IRootFamily rootFamily = Tinder.get().services().family().rootFamily();
+            String parentFamilyName = rootFamily.id();
+            try {
+                parentFamilyName = Objects.requireNonNull(ScalarFamily.this.parent()).id();
+            } catch (Exception ignore) {}
+            if(ScalarFamily.this.equals(rootFamily)) parentFamilyName = "none";
+
+            String persistence = "Disabled";
+            if(ScalarFamily.this.loadBalancer().persistent())
+                persistence = ScalarFamily.this.loadBalancer().attempts() + " Attempts";
+
+            Component parameters =
+                    resolver.getArray(
+                            "proxy.family.scalar.panel.parameters",
+                            LanguageResolver.tagHandler("display_name", ScalarFamily.this.displayName()),
+                            LanguageResolver.tagHandler("parent_family_name", parentFamilyName),
+                            LanguageResolver.tagHandler("players_count", ScalarFamily.this.playerCount()),
+
+                            LanguageResolver.tagHandler("servers_count", ScalarFamily.this.loadBalancer().size()),
+                            LanguageResolver.tagHandler("servers_open", ScalarFamily.this.loadBalancer().size(false)),
+                            LanguageResolver.tagHandler("servers_locked", ScalarFamily.this.loadBalancer().size(true)),
+
+                            LanguageResolver.tagHandler("load_balancing_algorithm", ScalarFamily.this.loadBalancer()),
+                            LanguageResolver.tagHandler("load_balancing_weighted", ScalarFamily.this.loadBalancer().weighted()),
+                            LanguageResolver.tagHandler("load_balancing_persistence", persistence)
+                    );
+            return this.profile(parameters, lockedServers);
         }
     }
 }

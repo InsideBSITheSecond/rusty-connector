@@ -101,10 +101,31 @@ proxy:
         no_family: "<red>There is no family with the name: <family_name></red>"
         no_server: "<red>There is no server with the uuid: <server_name></red>"
         same_family: "<red>You're already in that server</red>"
+    player:
+        chip: "<username>(<uuid>)"
+        chip_server: "<username>(<uuid>) {mcloader=<server_uuid>}"
+    mcloader:
+        chip: "[<server_uuid>](<server_address>) [<player_count> (<player_soft_cap> <> <player_hard_cap>) w-<server_weight>]" # No MiniMessage
+        chip_display_name: "[<server_uuid>] <server_name>(<server_address>) [<player_count> (<player_soft_cap> <> <player_hard_cap>) w-<server_weight>]" # No MiniMessage
+        profile:
+            parameters:
+                - "   ---| UUID: <uuid>"
+                - "   ---| Display Name: <display_name>"
+                - "   ---| Address: <address>"
+                - "   ---| Family: <family_id>"
+                - ""
+                - "   ---| Players:"
+                - "      | - Online: <player_count>"
+                - "      | - Soft Cap: <soft_cap>"
+                - "      | - Hard Cap: <hard_cap>"
+        command_descriptions:
+            details: "<dark_gray>Returns details for a specific MCLoader.</dark_gray>"
+            locked: "<dark_gray>Shows a list of only the locked MCLoaders on the network.</dark_gray>"
+            players: "<dark_gray>Shows a list of any stale MCLoaders on the network.</dark_gray>"
     family:
+        chip: "[<family_id> - <family_type>] {players=<player_count>, mcloaders=<server_count>, displayName=<display_name>}"
         description:
             - "<gray>Families are colored as: <blue>Scalar</blue>, <green>Static</green>, and <yellow>Ranked</yellow>.</gray>"
-            - "<gray>The family with a star (*) is the root family.</gray>"
         details_usage: "<gray>See more details about a particular family.</gray>"
         generic:
             servers:
@@ -113,15 +134,14 @@ proxy:
                 no_unlocked_servers: "<dark_gray>There are no unlocked servers.</dark_gray>"
                 open_servers: "<aqua>Open Servers</aqua>"
                 locked_servers: "<aqua>Locked Servers</aqua>"
-                details: "   ---| <index_number>. [<server_name>](<server_address>) [<player_count> (<player_soft_cap> <> <player_hard_cap>) w-<server_weight>]" # No MiniMessage
             command_descriptions:
                 players: "<dark_gray>Returns a list of the players in this family.</dark_gray>"
                 sort: "<dark_gray>Will cause the family to completely resort itself in accordance with it's load balancing algorithm.</dark_gray>"
                 reset_index: "<dark_gray>Will reset the family's input to the first server in the family.</dark_gray>"
                 locked: "<dark_gray>Shows all locked servers instead of unlocked.</dark_gray>"
         scalar:
-            panel:
-                info:
+            profile:
+                parameters:
                     - "   ---| Display Name: <display_name>"
                     - "   ---| Parent Family: <parent_family_name>"
                     - "   ---| Online Players: <players_count>"
@@ -139,8 +159,8 @@ proxy:
             residence:
                 missing: "<red>The server you were meant to be connected to is unavailable! In the meantime you've been connected to a fallback server!</red>"
                 blocked_join_attempt: "<red>The server you were meant to be connected to is unavailable! Please try again later!</red>"
-            panel:
-                info:
+            profile:
+                parameters:
                     - "   ---| Display Name: <display_name>"
                     - "   ---| Parent Family: <parent_family_name>"
                     - "   ---| Online Players: <player_count>"
@@ -157,8 +177,8 @@ proxy:
                     - "      | - Persistence: <load_balancing_persistence>"
         ranked:
             in_party: "<red>You're not allowed to enter matchmaking while in a party!</red>"
-            panel:
-                info:
+            profile:
+                parameters:
                     - "   ---| Display Name: <display_name>"
                     - "   ---| Parent Family: <parent_family_name>"
                     - ""
