@@ -1,34 +1,7 @@
 package group.aelysium.rustyconnector.plugin.fabric.commands;
 
-import cloud.commandframework.ArgumentDescription;
-import cloud.commandframework.Command;
-import cloud.commandframework.arguments.StaticArgument;
-import cloud.commandframework.arguments.standard.IntegerArgument;
-import cloud.commandframework.arguments.standard.LongArgument;
-import cloud.commandframework.arguments.standard.StringArgument;
-import cloud.commandframework.context.CommandContext;
-import cloud.commandframework.fabric.FabricServerCommandManager;
-import group.aelysium.rustyconnector.core.TinderAdapterForCore;
-import group.aelysium.rustyconnector.core.lib.lang.Lang;
-import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
-import group.aelysium.rustyconnector.core.lib.packets.MCLoader;
-import group.aelysium.rustyconnector.toolkit.core.logger.PluginLogger;
-import group.aelysium.rustyconnector.core.lib.cache.CacheableMessage;
-import group.aelysium.rustyconnector.core.lib.cache.MessageCacheService;
-import group.aelysium.rustyconnector.core.mcloader.lib.lang.MCLoaderLang;
-import group.aelysium.rustyconnector.plugin.fabric.central.Tinder;
-import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
-import group.aelysium.rustyconnector.core.lib.packets.SendPlayerPacket;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.minecraft.command.CommandSource;
-import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.List;
-import java.util.UUID;
-
 public final class CommandRusty {
+    /*
     public static void create(FabricServerCommandManager<CommandSource> manager) {
         manager.command(messageList());
         manager.command(messageGet());
@@ -194,5 +167,5 @@ public final class CommandRusty {
                         logger.log("An error stopped us from processing the request!", e);
                     }
                 });
-    }
+    }*/
 }

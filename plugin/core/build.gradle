@@ -12,8 +12,8 @@ dependencies {
     shadow "org.yaml:snakeyaml:${project.snakeyaml_version}"
     implementation "io.lettuce:lettuce-core:${project.lettuce_version}"
 
-    shadow "org.incendo:cloud-annotations:${cloud_annotation_version}"
-    annotationProcessor "org.incendo:cloud-annotations:${cloud_annotation_version}"
+    shadow "org.incendo:cloud-core:${cloud_version}"
+    shadow "org.incendo:cloud-annotations:${cloud_version}"
 }
 
 // If ever strange behaviour check the docs for reference: https://imperceptiblethoughts.com/shadow/

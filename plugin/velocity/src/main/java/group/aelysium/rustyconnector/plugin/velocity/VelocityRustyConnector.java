@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import group.aelysium.rustyconnector.toolkit.RustyConnector;
@@ -16,8 +18,12 @@ import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class VelocityRustyConnector {
+public class VelocityRustyConnector implements PluginContainer {
+    private final ExecutorService commandExecutor = Executors.newCachedThreadPool();
     private final Metrics.Factory metricsFactory;
     private final Tinder tinder;
 
@@ -75,5 +81,20 @@ public class VelocityRustyConnector {
         } catch (Exception e) {
             Tinder.get().logger().log("RustyConnector: " + e.getMessage());
         }
+    }
+
+    @Override
+    public PluginDescription getDescription() {
+        return () -> "rustyconnector-velocity";
+    }
+
+    @Override
+    public Optional<?> getInstance() {
+        return Optional.of(this);
+    }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        return this.commandExecutor;
     }
 }

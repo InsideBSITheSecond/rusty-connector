@@ -5,9 +5,12 @@ import group.aelysium.rustyconnector.toolkit.velocity.server.IMCLoader;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.Vector;
 
 public interface IParty {
+    UUID uuid();
+
     /**
      * Gets the server that this party has been assigned to.
      * @return {@link IMCLoader}

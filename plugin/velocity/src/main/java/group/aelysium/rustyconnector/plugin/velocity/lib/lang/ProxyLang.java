@@ -224,16 +224,16 @@ public class ProxyLang extends Lang {
             SPACING,
             BORDER,
             SPACING,
-            text("/rc family", AQUA),
-            resolver().get("proxy.root.usage.command_description.family"),
-            SPACING,
-            text("/rc message", AQUA),
+            text("rc message", AQUA),
             resolver().get("proxy.root.usage.command_description.message"),
             SPACING,
-            text("/rc reload", GOLD),
+            text("rc reload", GOLD),
             resolver().get("proxy.root.usage.command_description.reload"),
             SPACING,
-            text("/rc send", AQUA),
+            text("family", AQUA),
+            resolver().get("proxy.root.usage.command_description.family"),
+            SPACING,
+            text("send", AQUA),
             resolver().get("proxy.root.usage.command_description.send"),
             SPACING,
             BORDER
@@ -310,19 +310,6 @@ public class ProxyLang extends Lang {
             text(TIMESTAMP+": ", message.getSentence().color()).append(text(message.getDate().toString(), GRAY)),
             text(CONTENTS+": ", message.getSentence().color()).append(text(message.getContents(), GRAY)),
             SPACING
-    );
-
-    public final static ParameterizedMessage1<String> RC_MESSAGE_ERROR = error -> join(
-            newlines(),
-            BORDER,
-            SPACING,
-            WORDMARK_MESSAGE.color(RED),
-            SPACING,
-            BORDER,
-            SPACING,
-            text(error,GRAY),
-            SPACING,
-            BORDER
     );
 
     public final static Message RC_FAMILY = () -> {

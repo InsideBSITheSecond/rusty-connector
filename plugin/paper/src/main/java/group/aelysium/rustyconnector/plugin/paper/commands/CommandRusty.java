@@ -1,25 +1,14 @@
 package group.aelysium.rustyconnector.plugin.paper.commands;
 
-import cloud.commandframework.ArgumentDescription;
-import cloud.commandframework.Command;
-import cloud.commandframework.arguments.StaticArgument;
-import cloud.commandframework.arguments.standard.IntegerArgument;
-import cloud.commandframework.arguments.standard.LongArgument;
-import cloud.commandframework.arguments.standard.StringArgument;
-import cloud.commandframework.bukkit.parsers.PlayerArgument;
-import cloud.commandframework.paper.PaperCommandManager;
-import com.velocitypowered.api.command.CommandSource;
 import group.aelysium.rustyconnector.core.TinderAdapterForCore;
 import group.aelysium.rustyconnector.core.lib.cache.CacheableMessage;
 import group.aelysium.rustyconnector.core.lib.cache.MessageCacheService;
-import group.aelysium.rustyconnector.core.lib.lang.Lang;
 import group.aelysium.rustyconnector.core.lib.packets.BuiltInIdentifications;
 import group.aelysium.rustyconnector.core.lib.packets.MCLoader;
 import group.aelysium.rustyconnector.plugin.paper.PluginLogger;
 import group.aelysium.rustyconnector.plugin.paper.central.Tinder;
 import group.aelysium.rustyconnector.core.mcloader.lib.lang.MCLoaderLang;
 import group.aelysium.rustyconnector.toolkit.core.packet.Packet;
-import group.aelysium.rustyconnector.toolkit.core.packet.PacketIdentification;
 import group.aelysium.rustyconnector.core.lib.packets.SendPlayerPacket;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -30,16 +19,9 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 public final class CommandRusty {
-    public static void create(PaperCommandManager<CommandSender> manager) {
-        manager.command(messageList(manager));
-        manager.command(messageListPage(manager));
-        manager.command(messageGet(manager));
-        manager.command(send(manager));
-        manager.command(unlock(manager));
-        manager.command(lock(manager));
-        manager.command(uuid(manager));
+    public static void create(Object manager) {
     }
-
+/*
     private static Command.Builder<CommandSender> messageGet(PaperCommandManager<CommandSender> manager) {
         Tinder api = Tinder.get();
         PluginLogger logger = api.logger();
@@ -211,5 +193,5 @@ public final class CommandRusty {
                                 logger.log("An error stopped us from processing the request!", e);
                             }
                         }).execute());
-    }
+    }*/
 }

@@ -1,36 +1,34 @@
 package group.aelysium.rustyconnector.plugin.paper.central;
 
-import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator;
-import cloud.commandframework.paper.PaperCommandManager;
-import group.aelysium.rustyconnector.core.mcloader.central.CoreServiceHandler;
-import group.aelysium.rustyconnector.core.mcloader.central.MCLoaderFlame;
 import group.aelysium.rustyconnector.core.mcloader.central.MCLoaderTinder;
 import group.aelysium.rustyconnector.plugin.paper.commands.CommandRusty;
 import group.aelysium.rustyconnector.plugin.paper.events.OnPlayerJoin;
 import group.aelysium.rustyconnector.plugin.paper.events.OnPlayerLeave;
 import group.aelysium.rustyconnector.plugin.paper.events.OnPlayerPreLogin;
-import group.aelysium.rustyconnector.toolkit.RustyConnector;
 import group.aelysium.rustyconnector.core.lib.lang.LangService;
 import group.aelysium.rustyconnector.core.lib.lang.config.RootLanguageConfig;
-import group.aelysium.rustyconnector.core.lib.messenger.implementors.redis.RedisConnector;
 import group.aelysium.rustyconnector.plugin.paper.PaperRustyConnector;
 import group.aelysium.rustyconnector.plugin.paper.PluginLogger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.incendo.cloud.CommandManager;
+import org.incendo.cloud.SenderMapper;
+import org.incendo.cloud.annotations.AnnotationParser;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.paper.PaperCommandManager;
 import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 
 public class Tinder extends MCLoaderTinder {
     protected static Tinder instance;
     public static Tinder get() {
         return instance;
     }
-    private final PaperCommandManager<CommandSender> commandManager;
+    private final AnnotationParser<CommandSender> annotationParser;
     private final PaperRustyConnector plugin;
     private final PluginLogger pluginLogger;
     private final LangService lang;
@@ -42,11 +40,14 @@ public class Tinder extends MCLoaderTinder {
         this.pluginLogger = logger;
         this.lang = lang;
 
-        this.commandManager = new PaperCommandManager<>(
+        CommandManager<CommandSender> commandManager = new PaperCommandManager<>(
                 plugin,
-                AsynchronousCommandExecutionCoordinator.<CommandSender>builder().build(),
-                Function.identity(),
-                Function.identity()
+                ExecutionCoordinator.asyncCoordinator(),
+                SenderMapper.identity()
+        );
+        this.annotationParser = new AnnotationParser<>(
+                commandManager,
+                CommandSender.class
         );
 
         instance = this;
@@ -126,10 +127,6 @@ public class Tinder extends MCLoaderTinder {
         return this.paperServer();
     }
 
-    public PaperCommandManager<CommandSender> commandManager() {
-        return commandManager;
-    }
-
     public boolean isFolia() {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionisedServer");
@@ -141,8 +138,6 @@ public class Tinder extends MCLoaderTinder {
     @Override
     public void ignite(int port) throws RuntimeException {
         super.ignite(port);
-
-        CommandRusty.create(this.commandManager());
 
         this.paperServer().getPluginManager().registerEvents(new OnPlayerJoin(), plugin);
         this.paperServer().getPluginManager().registerEvents(new OnPlayerLeave(), plugin);

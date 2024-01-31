@@ -1,6 +1,5 @@
 package group.aelysium.rustyconnector.plugin.fabric.central;
 
-import cloud.commandframework.fabric.FabricServerCommandManager;
 import com.mojang.authlib.GameProfile;
 import group.aelysium.rustyconnector.core.mcloader.central.MCLoaderTinder;
 import group.aelysium.rustyconnector.plugin.fabric.commands.CommandRusty;
@@ -15,10 +14,15 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.kyori.adventure.text.Component;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.incendo.cloud.CommandManager;
+import org.incendo.cloud.SenderMapper;
+import org.incendo.cloud.annotations.AnnotationParser;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.fabric.FabricServerCommandManager;
 import org.slf4j.Logger;
 
-import java.io.File;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,14 +32,21 @@ public class Tinder extends MCLoaderTinder {
     public static Tinder get() {
         return instance;
     }
-    private final FabricServerCommandManager<CommandSource> commandManager;
+    private final AnnotationParser<ServerCommandSource> annotationParser;
     private final FabricRustyConnector plugin;
 
     protected Tinder(FabricRustyConnector plugin, PluginLogger logger, LangService lang) throws Exception {
         super(logger, lang);
         this.plugin = plugin;
 
-        this.commandManager = null;
+        CommandManager<ServerCommandSource> commandManager = new FabricServerCommandManager<>(
+                ExecutionCoordinator.asyncCoordinator(),
+                SenderMapper.identity()
+        );
+        this.annotationParser = new AnnotationParser<>(
+                commandManager,
+                ServerCommandSource.class
+        );
 
         instance = this;
     }
@@ -100,15 +111,9 @@ public class Tinder extends MCLoaderTinder {
         return this.fabricServer();
     }
 
-    public FabricServerCommandManager<CommandSource> commandManager() {
-        return commandManager;
-    }
-
     @Override
     public void ignite(int port) throws RuntimeException {
         super.ignite(port);
-
-        CommandRusty.create(this.commandManager());
 
         OnPlayerJoin.register();
         OnPlayerLeave.register();

@@ -99,7 +99,7 @@ proxy:
                 - "<dark_gray>If you have multiple servers with the same name, this feature may send players to a server other than the one you intended.</dark_gray>"
         no_player: "<red>There is no online player with the username: <username></red>"
         no_family: "<red>There is no family with the name: <family_name></red>"
-        no_server: "<red>There is no family with the name: <server_name></red>"
+        no_server: "<red>There is no server with the uuid: <server_name></red>"
         same_family: "<red>You're already in that server</red>"
     family:
         description:

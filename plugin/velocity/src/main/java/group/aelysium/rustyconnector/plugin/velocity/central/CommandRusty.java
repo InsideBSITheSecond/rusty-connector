@@ -1,27 +1,21 @@
 package group.aelysium.rustyconnector.plugin.velocity.central;
 
-import com.velocitypowered.api.command.BrigadierCommand;
-import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.ConsoleCommandSource;
+import group.aelysium.rustyconnector.core.lib.ReplyableCommand;
 import group.aelysium.rustyconnector.core.lib.cache.CacheableMessage;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.Family;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.ranked_family.RankedFamily;
-import group.aelysium.rustyconnector.plugin.velocity.lib.matchmaking.storage.GamemodeRankManager;
 import group.aelysium.rustyconnector.plugin.velocity.lib.players.Player;
-import group.aelysium.rustyconnector.plugin.velocity.lib.storage.StorageService;
 import group.aelysium.rustyconnector.toolkit.velocity.connection.ConnectionResult;
 import group.aelysium.rustyconnector.toolkit.velocity.connection.PlayerConnectable;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
-import group.aelysium.rustyconnector.toolkit.velocity.util.DependencyInjector;
-import group.aelysium.rustyconnector.plugin.velocity.PluginLogger;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.scalar_family.ScalarFamily;
 import group.aelysium.rustyconnector.plugin.velocity.lib.family.static_family.StaticFamily;
-import group.aelysium.rustyconnector.plugin.velocity.lib.auto_scaling.K8Service;
 import group.aelysium.rustyconnector.plugin.velocity.lib.lang.ProxyLang;
 import group.aelysium.rustyconnector.plugin.velocity.lib.server.MCLoader;
 import group.aelysium.rustyconnector.core.lib.cache.MessageCacheService;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
 
 import java.util.List;
@@ -29,492 +23,282 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public final class CommandRusty {
-    @Command("rc");
-    public void command() {}
-
-    public static BrigadierCommand create(DependencyInjector.DI3<Flame, PluginLogger, MessageCacheService> dependencies) {
-        Flame flame = dependencies.d1();
-        PluginLogger logger = dependencies.d2();
-        MessageCacheService messageCacheService = dependencies.d3();
-
-        LiteralCommandNode<CommandSource> rusty = LiteralArgumentBuilder
-            .<CommandSource>literal("rc")
-            .requires(source -> source instanceof ConsoleCommandSource)
-            .executes(context -> {
-                logger.send(ProxyLang.RC_ROOT_USAGE);
-                return Command.SINGLE_SUCCESS;
-            })
-            .then(Message.build(flame, logger, messageCacheService))
-            .then(FamilyC.build(flame, logger, messageCacheService))
-            .then(Send.build(flame, logger, messageCacheService))
-            .then(Debug.build(flame, logger, messageCacheService))
-            .then(Reload.build(flame, logger, messageCacheService))
-            .then(K8.build(flame, logger, messageCacheService))
-            .then(Database.build(flame, logger, messageCacheService))
-            .then(LiteralArgumentBuilder.<CommandSource>literal("hug")
-                    .executes(context -> {
-                        logger.send(Component.text("Awwwwww! Hug <3", NamedTextColor.LIGHT_PURPLE));
-                        return Command.SINGLE_SUCCESS;
-                    }))
-            .build();
-
-        // BrigadierCommand implements Command
-        return new BrigadierCommand(rusty);
+public final class CommandRusty extends ReplyableCommand {
+    @Command("rc")
+    public void hizfafjjszjivcys(ConsoleCommandSource sender) {
+        reply(sender, ProxyLang.RC_ROOT_USAGE);
     }
-}
+    @Command("rc debug")
+    public void stiuzzsqhudcamko(ConsoleCommandSource sender) {
+        try {
+            Flame flame = Tinder.get().flame();
 
-class Message {
-    public static ArgumentBuilder<CommandSource, ?> build(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("message")
-                .executes(context -> {
-                    logger.send(ProxyLang.RC_MESSAGE_ROOT_USAGE);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(listMessages(flame, logger, messageCacheService))
-                .then(getMessage(flame, logger, messageCacheService));
+            flame.bootLog().forEach(sender::sendMessage);
+        } catch (Exception e) {
+            error(sender, "There was an issue fetching the debug log!");
+        }
+    }
+    @Command("rc reload")
+    public void nglbwcmuvchdjaon(ConsoleCommandSource sender) {
+        try {
+            reply(sender, "Reloading the proxy...");
+            Tinder.get().rekindle();
+            reply(sender, "Done reloading!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private static ArgumentBuilder<CommandSource, ?> listMessages(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("list")
-                .executes(context -> {
-                    new Thread(() -> {
-                        try {
-                            if(messageCacheService.size() > 10) {
-                                int numberOfPages = Math.floorDiv(messageCacheService.size(),10) + 1;
 
-                                List<CacheableMessage> messagesPage = messageCacheService.fetchMessagesPage(1);
 
-                                ProxyLang.RC_MESSAGE_PAGE.send(logger,messagesPage,1,numberOfPages);
-
-                                return;
-                            }
-
-                            List<CacheableMessage> messages = messageCacheService.messages();
-
-                            ProxyLang.RC_MESSAGE_PAGE.send(logger,messages,1,1);
-
-                        } catch (Exception e) {
-                            logger.send(Component.text("There was an issue getting those messages!\n"+e.getMessage(), NamedTextColor.RED));
-                        }
-                    }).start();
-
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(RequiredArgumentBuilder.<CommandSource, Integer>argument("page-number", IntegerArgumentType.integer())
-                        .executes(context -> {
-                            new Thread(() -> {
-                                try {
-                                    int pageNumber = context.getArgument("page-number", Integer.class);
-
-                                    List<CacheableMessage> messages = messageCacheService.fetchMessagesPage(pageNumber);
-
-                                    int numberOfPages = Math.floorDiv(messageCacheService.size(),10) + 1;
-
-                                    ProxyLang.RC_MESSAGE_PAGE.send(logger,messages,pageNumber,numberOfPages);
-                                } catch (Exception e) {
-                                    logger.send(Component.text("There was an issue getting those messages!\n"+e.getMessage(), NamedTextColor.RED));
-                                }
-
-                            }).start();
-                            return Command.SINGLE_SUCCESS;
-                        })
-                );
+    @Command("rc message")
+    public void yckarhhyoblbmbdl(ConsoleCommandSource sender) {
+        reply(sender, ProxyLang.RC_MESSAGE_ROOT_USAGE);
     }
 
-    private static ArgumentBuilder<CommandSource, ?> getMessage(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("get")
-                .executes(context -> {
-                    logger.send(ProxyLang.RC_MESSAGE_GET_USAGE);
+    @Command("rc message list")
+    public void pfnommtocuemordk(ConsoleCommandSource sender) {
+        try {
+            Flame flame = Tinder.get().flame();
+            MessageCacheService messageCacheService = flame.services().messageCache();
 
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(RequiredArgumentBuilder.<CommandSource, Long>argument("snowflake", LongArgumentType.longArg())
-                        .executes(context -> {
-                            try {
-                                Long snowflake = context.getArgument("snowflake", Long.class);
+            if(messageCacheService.size() > 10) {
+                int numberOfPages = Math.floorDiv(messageCacheService.size(),10) + 1;
 
-                                CacheableMessage message = messageCacheService.findMessage(snowflake);
+                List<CacheableMessage> messagesPage = messageCacheService.fetchMessagesPage(1);
 
-                                ProxyLang.RC_MESSAGE_GET_MESSAGE.send(logger, message);
-                            } catch (Exception e) {
-                                ProxyLang.RC_MESSAGE_ERROR.send(logger,"There's no saved message with that ID!");
-                            }
+                reply(sender, ProxyLang.RC_MESSAGE_PAGE.build(messagesPage, 1, numberOfPages));
 
-                            return Command.SINGLE_SUCCESS;
-                        })
-                );
-    }
-}
-class FamilyC {
-    public static ArgumentBuilder<CommandSource, ?> build(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("family")
-                .executes(context -> {
-                    try {
-                        ProxyLang.RC_FAMILY.send(logger);
-                    } catch (Exception e) {
-                        logger.send(Component.text("Something prevented us from getting the families!\n"+e.getMessage(), NamedTextColor.RED));
-                    }
+                return;
+            }
 
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(RequiredArgumentBuilder.<CommandSource, String>argument("familyName", StringArgumentType.string())
-                        .executes(context -> {
-                            try {
-                                String familyName = context.getArgument("familyName", String.class);
-                                Family family = new Family.Reference(familyName).get();
+            List<CacheableMessage> messages = messageCacheService.messages();
 
-                                if(family instanceof ScalarFamily)
-                                    ProxyLang.RC_SCALAR_FAMILY_INFO.send(logger, (ScalarFamily) family, false);
-                                if(family instanceof StaticFamily)
-                                    ProxyLang.RC_STATIC_FAMILY_INFO.send(logger, (StaticFamily) family, false);
-                                if(family instanceof RankedFamily)
-                                    ProxyLang.RC_RANKED_FAMILY_INFO.send(logger, (RankedFamily) family, false);
-                            } catch (NoSuchElementException e) {
-                                logger.send(Component.text("A family with that id doesn't exist!", NamedTextColor.RED));
-                            } catch (Exception e) {
-                                logger.send(Component.text("Something prevented us from getting that family!\n"+e.getMessage(), NamedTextColor.RED));
-                            }
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(resetIndex(flame, logger, messageCacheService))
-                        .then(sort(flame, logger, messageCacheService))
-                        .then(locked(flame, logger, messageCacheService))
-                );
+            reply(sender, ProxyLang.RC_MESSAGE_PAGE.build(messages, 1, 1));
+        } catch (Exception e) {
+            error(sender, "There was an issue getting those messages!\n"+e.getMessage());
+        }
     }
 
-    private static ArgumentBuilder<CommandSource, ?> resetIndex(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("resetIndex")
-                .executes(context -> {
-                    try {
-                        String familyName = context.getArgument("familyName", String.class);
-                        Family family = new Family.Reference(familyName).get();
+    @Command("rc message list <page>")
+    public void evyfrpitotgxtbmf(ConsoleCommandSource sender, @Argument(value = "page") int page) {
+        try {
+            Flame flame = Tinder.get().flame();
+            MessageCacheService messageCacheService = flame.services().messageCache();
 
-                        family.loadBalancer().resetIndex();
+            List<CacheableMessage> messages = messageCacheService.fetchMessagesPage(page);
 
-                        if(family instanceof ScalarFamily)
-                            ProxyLang.RC_SCALAR_FAMILY_INFO.send(logger, (ScalarFamily) family, false);
-                        if(family instanceof StaticFamily)
-                            ProxyLang.RC_STATIC_FAMILY_INFO.send(logger, (StaticFamily) family, false);
-                        if(family instanceof RankedFamily)
-                            ProxyLang.RC_RANKED_FAMILY_INFO.send(logger, (RankedFamily) family, false);
-                    } catch (NoSuchElementException e) {
-                        logger.send(Component.text("A family with that id doesn't exist!", NamedTextColor.RED));
-                    } catch (Exception e) {
-                        logger.send(Component.text("Something prevented us from doing that!\n"+e.getMessage(), NamedTextColor.RED));
-                    }
-                    return Command.SINGLE_SUCCESS;
-                });
+            int numberOfPages = Math.floorDiv(messageCacheService.size(),10) + 1;
+
+            reply(sender, ProxyLang.RC_MESSAGE_PAGE.build(messages, page, numberOfPages));
+        } catch (Exception e) {
+            error(sender, "There was an issue getting those messages!\n"+e.getMessage());
+        }
     }
 
-    private static ArgumentBuilder<CommandSource, ?> sort(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("sort")
-                .executes(context -> {
-                    try {
-                        String familyName = context.getArgument("familyName", String.class);
-                        Family family = new Family.Reference(familyName).get();
+    @Command("rc message get")
+    public void scfjnwbsynzbksyh(ConsoleCommandSource sender) {
+        reply(sender, ProxyLang.RC_MESSAGE_GET_USAGE);
+    }
+    @Command("rc message get <snowflake>")
+    public void nidbtmkngikxlzyo(ConsoleCommandSource sender, @Argument(value = "snowflake") long snowflake) {
+        try {
+            Flame flame = Tinder.get().flame();
+            MessageCacheService messageCacheService = flame.services().messageCache();
 
-                        family.balance();
+            CacheableMessage message = messageCacheService.findMessage(snowflake);
 
-                        if(family instanceof ScalarFamily)
-                            ProxyLang.RC_SCALAR_FAMILY_INFO.send(logger, (ScalarFamily) family, false);
-                        if(family instanceof StaticFamily)
-                            ProxyLang.RC_STATIC_FAMILY_INFO.send(logger, (StaticFamily) family, false);
-                        if(family instanceof RankedFamily)
-                            ProxyLang.RC_RANKED_FAMILY_INFO.send(logger, (RankedFamily) family, false);
-                    } catch (NoSuchElementException e) {
-                        logger.send(Component.text("A family with that id doesn't exist!", NamedTextColor.RED));
-                    } catch (Exception e) {
-                        logger.send(Component.text("Something prevented us from doing that!\n"+e.getMessage(), NamedTextColor.RED));
-                    }
-                    return 1;
-                });
+            reply(sender, message.toString());
+        } catch (Exception e) {
+            error(sender, "There was an issue getting that message!\n"+e.getMessage());
+        }
     }
 
-    private static ArgumentBuilder<CommandSource, ?> locked(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("locked")
-                .executes(context -> {
-                    try {
-                        String familyName = context.getArgument("familyName", String.class);
-                        Family family = new Family.Reference(familyName).get();
+    @Command("send")
+    public void acmednrmiufxxviz(ConsoleCommandSource sender) {
+        reply(sender, ProxyLang.RC_SEND_USAGE);
+    }
+    @Command("send <username>")
+    @Command("send <username> server")
+    public void gfkywqpzlgnohrxn(ConsoleCommandSource sender, @Argument(value = "username") String username) {
+        reply(sender, ProxyLang.RC_SEND_USAGE);
+    }
+    @Command("send <username> <family_name>")
+    public void qxeafgbinengqytu(ConsoleCommandSource sender, @Argument(value = "username") String username, @Argument(value = "family_name") String family_name) {
+        try {
+            // Uses this first so that we can start by checking if the player is online.
+            Player player = new IPlayer.UsernameReference(username).get();
+            if (!player.online()) {
+                reply(sender, ProxyLang.RC_SEND_NO_PLAYER.build(username));
+                return;
+            }
 
-                        if(family instanceof ScalarFamily)
-                            ProxyLang.RC_SCALAR_FAMILY_INFO.send(logger, (ScalarFamily) family, true);
-                        if(family instanceof StaticFamily)
-                            ProxyLang.RC_STATIC_FAMILY_INFO.send(logger, (StaticFamily) family, true);
-                        if(family instanceof RankedFamily)
-                            ProxyLang.RC_RANKED_FAMILY_INFO.send(logger, (RankedFamily) family, true);
-                    } catch (NoSuchElementException e) {
-                        logger.send(Component.text("A family with that id doesn't exist!", NamedTextColor.RED));
-                    } catch (Exception e) {
-                        logger.send(Component.text("Something prevented us from doing that!\n"+e.getMessage(), NamedTextColor.RED));
-                    }
-                    return 1;
-                });
+            Family family = new Family.Reference(family_name).get();
+
+            PlayerConnectable.Request request = family.connect(player);
+            ConnectionResult result = request.result().get(30, TimeUnit.SECONDS);
+
+            if(result.connected()) return;
+
+            reply(sender, result.message());
+        } catch (NoSuchElementException e) {
+            reply(sender, ProxyLang.RC_SEND_NO_FAMILY.build(family_name));
+        } catch (Exception e) {
+            error(sender, "There was an issue using that command! "+e.getMessage());
+        }
+    }
+    @Command("send <username> server <server_uuid>")
+    public void mlavtgbdguegwcwi(ConsoleCommandSource sender, @Argument(value = "username") String username, @Argument(value = "server_uuid") String server_uuid) {
+        try {
+            // Uses this first so that we can start by checking if the player is online.
+            Player player = new IPlayer.UsernameReference(username).get();
+            if (!player.online()) {
+                reply(sender, ProxyLang.RC_SEND_NO_PLAYER.build(username));
+                return;
+            }
+
+            MCLoader server;
+            try {
+                server = new MCLoader.Reference(UUID.fromString(server_uuid)).get();
+            } catch (Exception ignore) {
+                reply(sender, ProxyLang.RC_SEND_NO_SERVER.build(server_uuid.toString()));
+                return;
+            }
+
+            server.connect(player);
+        } catch (Exception e) {
+            error(sender, "There was an issue using that command! "+e.getMessage());
+        }
     }
 
-    private static ArgumentBuilder<CommandSource, ?> players(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("players")
-                .executes(context -> {
-                    try {
-                        String familyName = context.getArgument("familyName", String.class);
-                        Family family = new Family.Reference(familyName).get();
-
-                        String playerNames = "";
-                        List<com.velocitypowered.api.proxy.Player> players = family.players();
-                        com.velocitypowered.api.proxy.Player lastPlayer = players.get(players.size() - 1);
-                        for (com.velocitypowered.api.proxy.Player player : players) {
-                            if(player.equals(lastPlayer)) {
-                                playerNames = playerNames + player.getUsername();
-                                break;
-                            }
-                            playerNames = playerNames + player.getUsername() + ", ";
-                        }
-
-                        logger.send(Component.text(playerNames));
-                    } catch (NoSuchElementException e) {
-                        ProxyLang.RC_FAMILY.send(logger);
-                        logger.send(Component.text("A family with that id doesn't exist!", NamedTextColor.RED));
-                    } catch (Exception e) {
-                        ProxyLang.RC_FAMILY.send(logger);
-                        logger.send(Component.text("Something prevented us from doing that!\n"+e.getMessage(), NamedTextColor.RED));
-                    }
-                    return 1;
-                });
+    private void printFamilyPage(ConsoleCommandSource sender, Family family, boolean showLocked) {
+        if(family instanceof ScalarFamily)
+            reply(sender, ProxyLang.RC_SCALAR_FAMILY_INFO.build((ScalarFamily) family, showLocked));
+        if(family instanceof StaticFamily)
+            reply(sender, ProxyLang.RC_STATIC_FAMILY_INFO.build((StaticFamily) family, showLocked));
+        if(family instanceof RankedFamily)
+            reply(sender, ProxyLang.RC_RANKED_FAMILY_INFO.build((RankedFamily) family, showLocked));
     }
-}
-class Send {
-    public static ArgumentBuilder<CommandSource, ?> build(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("send")
-                .executes(context -> {
-                    logger.send(ProxyLang.RC_SEND_USAGE);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(defaultSender(flame, logger, messageCacheService))
-                .then(serverSender(flame, logger, messageCacheService));
+    @Command("family")
+    public void tdrdolhxvcjhaskb(ConsoleCommandSource sender) {
+        reply(sender, ProxyLang.RC_FAMILY.build());
+    }
+    @Command("family <name>")
+    public void mfndwqqzuiqmesyn(ConsoleCommandSource sender, @Argument(value = "name") String name) {
+        Family family = new Family.Reference(name).get();
+
+        printFamilyPage(sender, family, false);
     }
 
-    private static ArgumentBuilder<CommandSource, ?> defaultSender(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return RequiredArgumentBuilder.<CommandSource, String>argument("username", StringArgumentType.string())
-                .executes(context -> {
-                    logger.send(ProxyLang.RC_SEND_USAGE);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(RequiredArgumentBuilder.<CommandSource, String>argument("familyName", StringArgumentType.greedyString())
-                        .executes(context -> {
-                            String familyName = context.getArgument("familyName", String.class);
-                            String username = context.getArgument("username", String.class);
+    @Command("family <name> resetIndex")
+    public void kriytbuihowvzeoh(ConsoleCommandSource sender, @Argument(value = "name") String name) {
+        try {
+            Family family = new Family.Reference(name).get();
 
-                            try {
-                                com.velocitypowered.api.proxy.Player fetchedPlayer = Tinder.get().velocityServer().getPlayer(username).orElse(null);
-                                if(fetchedPlayer == null) {
-                                    logger.send(ProxyLang.RC_SEND_NO_PLAYER.build(username));
-                                    return Command.SINGLE_SUCCESS;
-                                }
-                                Player player = Player.from(fetchedPlayer);
+            family.loadBalancer().resetIndex();
 
-                                Family family = new Family.Reference(familyName).get();
+            printFamilyPage(sender, family, false);
+        } catch (Exception e) {
+            error(sender, "Something prevented us from reseting the index on that family!\n"+e.getMessage());
+        }
+    }
+    @Command("family <name> sort")
+    public void rwgdcisxtfobunei(ConsoleCommandSource sender, @Argument(value = "name") String name) {
+        try {
+            Family family = new Family.Reference(name).get();
 
-                                if(player.server().orElseThrow().family().equals(family)) {
-                                    logger.send(ProxyLang.RC_SEND_NO_FAMILY.build(familyName));
-                                    return Command.SINGLE_SUCCESS;
-                                }
+            family.balance();
 
-                                PlayerConnectable.Request request = family.connect(player);
-                                ConnectionResult result = request.result().get(30, TimeUnit.SECONDS);
+            printFamilyPage(sender, family, false);
+        } catch (Exception e) {
+            error(sender, "Something prevented us from reseting the index on that family!\n"+e.getMessage());
+        }
+    }
+    @Command("family <name> lockedServers")
+    public void anwgfuuvjedsbisz(ConsoleCommandSource sender, @Argument(value = "name") String name) {
+        try {
+            Family family = new Family.Reference(name).get();
 
-                                if(result.connected()) return Command.SINGLE_SUCCESS;
+            printFamilyPage(sender, family, true);
+        } catch (Exception e) {
+            error(sender, "Something prevented us from reseting the index on that family!\n"+e.getMessage());
+        }
+    }
+    @Command("family <name> players")
+    public void myjchiprqzluchxe(ConsoleCommandSource sender, @Argument(value = "name") String name) {
+        try {
+            Family family = new Family.Reference(name).get();
 
-                                player.sendMessage(result.message());
-                            } catch (NoSuchElementException e) {
-                                logger.send(ProxyLang.RC_SEND_NO_FAMILY.build(familyName));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                logger.send(Component.text("There was an issue using that command! "+e.getMessage(), NamedTextColor.RED));
-                            }
-                            return Command.SINGLE_SUCCESS;
-                        })
-                );
+            StringBuilder playerNames = new StringBuilder();
+            List<com.velocitypowered.api.proxy.Player> players = family.players();
+            com.velocitypowered.api.proxy.Player lastPlayer = players.get(players.size() - 1);
+            for (com.velocitypowered.api.proxy.Player player : players) {
+                if(player.equals(lastPlayer)) {
+                    playerNames.append(player.getUsername());
+                    break;
+                }
+                playerNames.append(player.getUsername()).append(", ");
+            }
+
+            reply(sender, Component.text(playerNames.toString()));
+        } catch (Exception e) {
+            error(sender, "Something prevented us from reseting the index on that family!\n"+e.getMessage());
+        }
     }
 
-    private static ArgumentBuilder<CommandSource, ?> serverSender(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("server")
-                .executes(context -> {
-                    logger.send(ProxyLang.RC_SEND_USAGE);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(RequiredArgumentBuilder.<CommandSource, String>argument("username", StringArgumentType.string())
-                        .executes(context -> {
-                            logger.send(ProxyLang.RC_SEND_USAGE);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("serverUUID", StringArgumentType.greedyString())
-                                .executes(context -> {
-                                    try {
-                                        UUID serverUUID = UUID.fromString(context.getArgument("serverUUID", String.class));
-                                        String username = context.getArgument("username", String.class);
 
-                                        // Uses this first so that we can start by checking if the player is online.
-                                        Player player = new IPlayer.UsernameReference(username).get();
-                                        if (!player.online()) {
-                                            logger.send(ProxyLang.RC_SEND_NO_PLAYER.build(username));
-                                            return Command.SINGLE_SUCCESS;
-                                        }
 
-                                        MCLoader server;
-                                        try {
-                                            server = new MCLoader.Reference(serverUUID).get();
-                                        } catch (Exception ignore) {
-                                            logger.send(ProxyLang.RC_SEND_NO_SERVER.build(serverUUID.toString()));
-                                            return Command.SINGLE_SUCCESS;
-                                        }
-
-                                        server.connect(player);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                        logger.send(Component.text("There was an issue using that command! "+e.getMessage(), NamedTextColor.RED));
-                                    }
-
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                        )
-                );
+    @Command("mcloaders")
+    public void spxjakngfzwwpmma(ConsoleCommandSource sender) {
     }
-}
-class Debug {
-    public static ArgumentBuilder<CommandSource, ?> build(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("debug")
-                .executes(context -> {
-                    flame.bootLog().forEach(logger::send);
-                    return Command.SINGLE_SUCCESS;
-                });
+    @Command("mcloaders locked")
+    public void pgbospdypzqqqtar(ConsoleCommandSource sender) {
     }
-}
-class Reload {
-    public static ArgumentBuilder<CommandSource, ?> build(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("reload")
-                .executes(context -> {
-                    logger.log("Reloading the proxy...");
-                    try {
-                        Tinder.get().rekindle();
-                        logger.log("Done reloading!");
-                        return 1;
-                    } catch (Exception e) {
-                        logger.error(e.getMessage(),e);
-                    }
-                    return 0;
-                });
-    }
-}
-class K8 {
-    public static ArgumentBuilder<CommandSource, ?> build(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("k8") // k8 createPod <familyName> <containerName> <containerPort>
-                .then(LiteralArgumentBuilder.<CommandSource>literal("createPod")
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("familyName", StringArgumentType.string())
-                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("containerName", StringArgumentType.string())
-                                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("containerPort", StringArgumentType.string())
-                                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("containerImage", StringArgumentType.greedyString())
-                                                        .executes(context -> {
-                                                            try {
-                                                                String familyName = context.getArgument("familyName", String.class);
-                                                                String containerName = context.getArgument("containerName", String.class);
-                                                                String containerPort = context.getArgument("containerPort", String.class);
-                                                                String containerImage = context.getArgument("containerImage", String.class);
-
-                                                                K8Service k8 = new K8Service();
-                                                                k8.createServer(familyName, containerName, containerImage);
-                                                            } catch (Exception e) {
-                                                                e.printStackTrace();
-                                                            }
-
-                                                            return Command.SINGLE_SUCCESS;
-                                                        })
-                                                )
-                                        )
-                                )
-                        ))
-                .then(LiteralArgumentBuilder.<CommandSource>literal("deletePod") // k8 deletePod <podName> <familyName>
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("podName", StringArgumentType.string())
-                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("familyName", StringArgumentType.string())
-                                        .executes(context -> {
-                                            try {
-                                                String podName = context.getArgument("podName", String.class);
-                                                String familyName = context.getArgument("familyName", String.class);
-
-                                                K8Service k8 = new K8Service();
-                                                k8.deleteServer(podName, familyName);
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-
-                                            return Command.SINGLE_SUCCESS;
-                                        })
-                                )
-                        ));
-    }
-}
-class Database {
-    public static ArgumentBuilder<CommandSource, ?> build(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("database") // k8 createPod <familyName> <containerName> <containerPort>
-                .then(bulk(flame, logger, messageCacheService))
-                .then(LiteralArgumentBuilder.literal("players"))
-                .then(LiteralArgumentBuilder.literal("residence"))
-                .then(LiteralArgumentBuilder.literal("friends"))
-                ;
+    @Command("mcloaders stale")
+    public void mlpdnlxutozqqdxd(ConsoleCommandSource sender) {
     }
 
-    private static ArgumentBuilder<CommandSource, ?> bulk(Flame flame, PluginLogger logger, MessageCacheService messageCacheService) {
-        return LiteralArgumentBuilder.<CommandSource>literal("bulk")
-                .then(LiteralArgumentBuilder.<CommandSource>literal("purgeGameRecords")
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("gameName", StringArgumentType.greedyString())
-                                .executes(context -> {
-                                    String gameName = context.getArgument("gameName", String.class);
 
-                                    StorageService storage = flame.services().storage();
 
-                                    if(storage.database().deleteGame(storage, gameName))
-                                        logger.log("Successfully deleted "+gameName);
-                                    else
-                                        logger.log(gameName+" couldn't be found.");
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(LiteralArgumentBuilder.<CommandSource>literal("purgeUnusedRanks")
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("gameName", StringArgumentType.greedyString())
-                                .executes(context -> {
-                                    String gameName = context.getArgument("gameName", String.class);
+    @Command("players")
+    public void keqqribeadpmsenk(ConsoleCommandSource sender) {
+    }
+    @Command("players <uuid_or_username>")
+    public void frocvrumnznwjpit(ConsoleCommandSource sender, @Argument(value="uuid_or_username") String uuid_or_username) {
+    }
 
-                                    StorageService storage = flame.services().storage();
-                                    GamemodeRankManager game = storage.database().getGame(gameName).orElse(null);
-                                    if(game == null) {
-                                        logger.log(gameName + " couldn't be found.");
-                                        return Command.SINGLE_SUCCESS;
-                                    }
 
-                                    game.quantizeRankSchemas(storage);
-                                    logger.log("Successfully purged unused rank records from "+gameName);
+    @Command("friends <uuid_or_username>")
+    @Command("players <uuid_or_username> friends")
+    public void qrpfgflganrtrbku(ConsoleCommandSource sender, @Argument(value="uuid_or_username") String uuid_or_username) {
+    }
+    @Command("friends <uuid_or_username> remove <friends_uuid_or_username>")
+    @Command("players <uuid_or_username> friends remove <friends_uuid_or_username>")
+    public void yvwjruscvpreuuqy(ConsoleCommandSource sender, @Argument(value="uuid_or_username") String uuid_or_username, @Argument(value="friends_uuid_or_username") String friends_uuid_or_username) {
+    }
+    @Command("friends <uuid_or_username> add <friends_uuid_or_username>")
+    @Command("players <uuid_or_username> friends add <friends_uuid_or_username>")
+    public void bklyqsjdkydebjvf(ConsoleCommandSource sender, @Argument(value="uuid_or_username") String uuid_or_username, @Argument(value="friends_uuid_or_username") String friends_uuid_or_username) {
+    }
 
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(LiteralArgumentBuilder.<CommandSource>literal("export")
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("gameName", StringArgumentType.greedyString())
-                                .executes(context -> {
-                                    String gameName = context.getArgument("gameName", String.class);
 
-                                    StorageService storage = flame.services().storage();
-                                    GamemodeRankManager game = storage.database().getGame(gameName).orElse(null);
-                                    if(game == null) {
-                                        logger.log(gameName + " couldn't be found.");
-                                        return Command.SINGLE_SUCCESS;
-                                    }
 
-                                    game.quantizeRankSchemas(storage);
-                                    logger.log("Successfully purged unused rank records from "+gameName);
-
-                                    return Command.SINGLE_SUCCESS;
-                                })))
-                .then(LiteralArgumentBuilder.literal("players"))
-                .then(LiteralArgumentBuilder.literal("residence"))
-                .then(LiteralArgumentBuilder.literal("friends"))
-                ;
+    @Command("parties")
+    public void vdskprafxmuqwtpl(ConsoleCommandSource sender) {
+    }
+    @Command("parties <uuid>")
+    public void dwgrvlrqvszehfjb(ConsoleCommandSource sender, @Argument(value="uuid") String uuid) {
+    }
+    @Command("parties searchFor player <uuid_or_username>")
+    @Command("players <uuid_or_username> party")
+    public void rlpwwcqgxapxodje(ConsoleCommandSource sender, @Argument(value="uuid_or_username") String uuid_or_username) {
+    }
+    @Command("parties searchFor mcloader <uuid>")
+    @Command("mcloader <uuid> parties")
+    public void elpovlwixcohqdao(ConsoleCommandSource sender, @Argument(value="uuid") String uuid) {
+    }
+    @Command("parties searchFor family <name>")
+    @Command("families <name> parties")
+    public void tdwtipumkqpueobv(ConsoleCommandSource sender, @Argument(value="name") String name) {
     }
 }

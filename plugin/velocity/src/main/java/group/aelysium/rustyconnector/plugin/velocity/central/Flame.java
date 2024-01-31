@@ -165,7 +165,7 @@ public class Flame extends VelocityFlame<CoreServiceHandler> {
             flame.services().add(new VelocityPacketBuilder(flame));
 
             initialize.events(plugin, eventManager);
-            initialize.commands(inject(flame, logger, messageCacheService));
+            Tinder.get().velocityServer().getCommandManager().unregister("server");
             logger.send(Component.text("Initializing 100%...", NamedTextColor.DARK_GRAY));
 
             return flame;
@@ -236,21 +236,6 @@ class Initialize {
         rcEventManager.on(UnregisterEvent.class, new OnMCLoaderUnregister());
         rcEventManager.on(MCLoaderSwitchEvent.class, new OnMCLoaderSwitch());
         rcEventManager.on(MCLoaderLeaveEvent.class, new OnMCLoaderLeave());
-    }
-
-    public void commands(DependencyInjector.DI3<Flame, PluginLogger, MessageCacheService> dependencies) {
-        CommandManager commandManager = api.velocityServer().getCommandManager();
-
-        AnnotationParser<C> annotationParser = new AnnotationParser(commandManager);
-
-        commandManager.register(
-                commandManager.metaBuilder("rc")
-                        .aliases("/rc", "//") // Add slash variants so that they can be used in console as well
-                        .build(),
-                CommandRusty.create(dependencies)
-        );
-
-        commandManager.unregister("server");
     }
 
     public String version() {

@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Party implements group.aelysium.rustyconnector.toolkit.velocity.parties.IParty {
+    private final UUID uuid = UUID.randomUUID();
     private final Map<UUID, IPlayer> players;
     private final int maxSize;
     private UUID leader;
@@ -25,6 +26,10 @@ public class Party implements group.aelysium.rustyconnector.toolkit.velocity.par
         this.players.put(host.uuid(), host);
         this.leader = host.uuid();
         this.server = new WeakReference<>(server);
+    }
+
+    public UUID uuid() {
+        return this.uuid;
     }
 
     public void setServer(IMCLoader server) {

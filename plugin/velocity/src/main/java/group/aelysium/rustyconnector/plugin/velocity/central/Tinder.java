@@ -1,9 +1,5 @@
 package group.aelysium.rustyconnector.plugin.velocity.central;
 
-import cloud.commandframework.CommandManager;
-import cloud.commandframework.SenderMapper;
-import cloud.commandframework.execution.ExecutionCoordinator;
-import cloud.commandframework.velocity.VelocityCommandManager;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -14,14 +10,17 @@ import group.aelysium.rustyconnector.core.lib.lang.config.RootLanguageConfig;
 import group.aelysium.rustyconnector.toolkit.mc_loader.central.IMCLoaderTinder;
 import group.aelysium.rustyconnector.plugin.velocity.PluginLogger;
 import group.aelysium.rustyconnector.plugin.velocity.VelocityRustyConnector;
+import org.incendo.cloud.CommandManager;
+import org.incendo.cloud.SenderMapper;
 import org.incendo.cloud.annotations.AnnotationParser;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.velocity.VelocityCommandManager;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Vector;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * The root api endpoint for the entire RustyConnector api.
@@ -40,8 +39,7 @@ public class Tinder implements VelocityTinder {
     private final LangService lang;
     private final Vector<Consumer<Flame>> onStart = new Vector<>();
     private final Vector<Runnable> onStop = new Vector<>();
-    private final VelocityCommandManager<CommandSource> commandManager;
-    private final AnnotationParser<?> annotationParser;
+    private final AnnotationParser<CommandSource> annotationParser;
 
     private Tinder(VelocityRustyConnector plugin, ProxyServer server, PluginLogger logger, @DataDirectory Path dataFolder, LangService lang) {
         instance = this;
@@ -51,13 +49,19 @@ public class Tinder implements VelocityTinder {
         this.pluginLogger = logger;
         this.dataFolder = dataFolder;
         this.lang = lang;
-        this.commandManager = new VelocityCommandManager<>(
+
+        CommandManager<CommandSource> commandManager = new VelocityCommandManager<>(
                 plugin,
                 server,
                 ExecutionCoordinator.asyncCoordinator(),
                 SenderMapper.identity()
         );
-        this.annotationParser = new AnnotationParser(this.commandManager);
+        this.annotationParser = new AnnotationParser<>(
+                commandManager,
+                CommandSource.class
+        );
+
+        this.annotationParser.parse(new CommandRusty());
     }
 
     /**
@@ -109,6 +113,10 @@ public class Tinder implements VelocityTinder {
 
     public CoreServiceHandler services() {
         return this.flame.services();
+    }
+
+    public void registerCommand(Object command) {
+        this.annotationParser.parse(command);
     }
 
     /**

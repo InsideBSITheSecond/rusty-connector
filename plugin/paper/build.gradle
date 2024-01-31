@@ -9,7 +9,7 @@ dependencies {
     shadow project(path: ':core', configuration: 'shadow')
     compileOnly "io.papermc.paper:paper-api:${project.paper_version}"
     shadow "dev.folia:folia-api:${project.folia_version}"
-    implementation "cloud.commandframework:cloud-paper:${project.cloud_version}"
+    implementation "org.incendo:cloud-paper:${project.cloud_version}"
 }
 
 // If ever strange behaviour check the docs for reference: https://imperceptiblethoughts.com/shadow/
