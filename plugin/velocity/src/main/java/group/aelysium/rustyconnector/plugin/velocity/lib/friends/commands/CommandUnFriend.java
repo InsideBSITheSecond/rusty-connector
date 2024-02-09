@@ -1,110 +1,81 @@
 package group.aelysium.rustyconnector.plugin.velocity.lib.friends.commands;
 
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.velocitypowered.api.command.BrigadierCommand;
-import com.velocitypowered.api.command.CommandSource;
-import group.aelysium.rustyconnector.plugin.velocity.PluginLogger;
+import group.aelysium.rustyconnector.core.lib.ReplyableCommand;
+import group.aelysium.rustyconnector.core.lib.lang.LanguageResolver;
 import group.aelysium.rustyconnector.plugin.velocity.central.Tinder;
-import group.aelysium.rustyconnector.plugin.velocity.lib.Permission;
 import group.aelysium.rustyconnector.plugin.velocity.lib.friends.FriendsService;
 import group.aelysium.rustyconnector.plugin.velocity.lib.lang.ProxyLang;
 import group.aelysium.rustyconnector.plugin.velocity.lib.players.Player;
 import group.aelysium.rustyconnector.toolkit.velocity.player.IPlayer;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import org.incendo.cloud.annotations.Argument;
+import org.incendo.cloud.annotations.Command;
+import org.incendo.cloud.annotations.Permission;
+import org.incendo.cloud.annotations.suggestion.Suggestions;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public final class CommandUnFriend {
-    public static BrigadierCommand create(FriendsService friendsService) {
-        Tinder api = Tinder.get();
-        PluginLogger logger = api.logger();
-
-        if (friendsService == null) {
-            logger.send(Component.text("The Friends service must be enabled to load the /friend command.", NamedTextColor.YELLOW));
-            return null;
-        }
-
-        LiteralCommandNode<CommandSource> unfriend = LiteralArgumentBuilder
-                .<CommandSource>literal("unfriend")
-                .requires(source -> source instanceof com.velocitypowered.api.proxy.Player)
-                .executes(context -> {
-                    if(!(context.getSource() instanceof com.velocitypowered.api.proxy.Player player)) {
-                        logger.log("/unfriend must be sent as a player!");
-                        return Command.SINGLE_SUCCESS;
-                    }
-
-                    if(!Permission.validate(player, "rustyconnector.command.unfriend")) {
-                        player.sendMessage(ProxyLang.NO_PERMISSION);
-                        return Command.SINGLE_SUCCESS;
-                    }
-
-                    return closeMessage(player, ProxyLang.UNFRIEND_USAGE);
-                })
-                .then(RequiredArgumentBuilder.<CommandSource, String>argument("username", StringArgumentType.string())
-                        .suggests((context, builder) -> {
-                            if(!(context.getSource() instanceof com.velocitypowered.api.proxy.Player eventPlayer)) return builder.buildFuture();
-                            Player player = Player.from(eventPlayer);
-
-                            try {
-                                List<IPlayer> friends = friendsService.findFriends(player).orElseThrow();
-
-                                friends.forEach(friend -> {
-                                    try {
-                                        builder.suggest(friend.username());
-                                    } catch (Exception ignore) {}
-                                });
-
-                                return builder.buildFuture();
-                            } catch (Exception ignored) {}
-
-                            builder.suggest("Error while finding friends!");
-                            return builder.buildFuture();
-                        })
-                        .executes(context -> {
-                            if(!(context.getSource() instanceof com.velocitypowered.api.proxy.Player player)) {
-                                logger.log("/unfriend must be sent as a player!");
-                                return Command.SINGLE_SUCCESS;
-                            }
-
-                            if(!Permission.validate(player, "rustyconnector.command.unfriend")) {
-                                player.sendMessage(ProxyLang.NO_PERMISSION);
-                                return Command.SINGLE_SUCCESS;
-                            }
-
-                            String username = context.getArgument("username", String.class);
-                            Player targetPlayer = (Player) new Player.UsernameReference(username).get();
-
-                            if(!friendsService.areFriends(Player.from(player), targetPlayer))
-                                return closeMessage(player, ProxyLang.UNFRIEND_NOT_FRIENDS.build(username));
-
-                            if(targetPlayer == null)
-                                return closeMessage(player, ProxyLang.NO_PLAYER.build(username));
-
-                            try {
-                                friendsService.removeFriends(Player.from(player), targetPlayer);
-
-                                return closeMessage(player, ProxyLang.UNFRIEND_SUCCESS.build(username));
-                            } catch (IllegalStateException e) {
-                                return closeMessage(player, Component.text(e.getMessage(), NamedTextColor.RED));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                return closeMessage(player, ProxyLang.INTERNAL_ERROR);
-                            }
-                        })
-                )
-                .build();
-
-        // BrigadierCommand implements Command
-        return new BrigadierCommand(unfriend);
+public final class CommandUnFriend extends ReplyableCommand {
+    @Command("unfriend")
+    @Permission("rustyconnector.command.unfriend")
+    public void ruwxevdgqannsqbm(com.velocitypowered.api.proxy.Player source) {
+        reply(source, ProxyLang.USAGE+": /unfriend <username>");
     }
 
-    public static int closeMessage(com.velocitypowered.api.proxy.Player player, Component message) {
-        player.sendMessage(message);
-        return Command.SINGLE_SUCCESS;
+    @Command("unfriend <username>")
+    @Permission("rustyconnector.command.unfriend")
+    public void wgqubtagkfabwjgp(com.velocitypowered.api.proxy.Player source, @Argument(value = "username") String username) {
+        try {
+            Tinder api = Tinder.get();
+
+            if(source.getUsername().equals(username)) {
+                error(source, "Are you a dummy? You can't unfriend yourself! (You were never even so much as your own friend to begin with)"); // lulz
+                return;
+            }
+
+            Player target = new IPlayer.UsernameReference(username).get();
+            Player sender = Player.from(source);
+
+            FriendsService service = Tinder.get().services().friends().orElse(null);
+            if(service == null) {
+                error(source, "The friends module is not enabled!");
+                return;
+            }
+
+            if (!service.areFriends(target, sender)) {
+                reply(source, api.lang().resolver().get("proxy.friends.unfriend.not_friends", LanguageResolver.tagHandler("username", username)));
+                return;
+            }
+
+            service.removeFriends(sender, target);
+
+            reply(source, api.lang().resolver().get("proxy.friends.unfriend.success", LanguageResolver.tagHandler("username", username)));
+        } catch (Exception e) {
+            error(source, e.getMessage());
+        }
+    }
+
+    @Suggestions("username")
+    public Iterable<String> cptjpebkbdkpmogo(com.velocitypowered.api.proxy.Player source) {
+        List<String> output = new ArrayList<>();
+        try {
+            Tinder api = Tinder.get();
+
+            Player player = new Player.Reference(source.getUniqueId()).get();
+
+            FriendsService service = api.services().friends().orElseThrow(() -> new RuntimeException("The friends module isn't enabled!"));
+
+            List<IPlayer> friends = service.findFriends(player).orElseThrow(() -> new RuntimeException(player.username()+" has no friends!"));
+
+            friends.forEach(friend -> {
+                try {
+                    output.add(friend.username());
+                } catch (Exception ignore) {}
+            });
+        } catch (Exception e) {
+            output.clear();
+            output.add("There was an issue finding your friends!");
+        }
+        return output;
     }
 }

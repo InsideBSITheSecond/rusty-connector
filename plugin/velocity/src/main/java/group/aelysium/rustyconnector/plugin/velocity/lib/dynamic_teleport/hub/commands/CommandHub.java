@@ -6,6 +6,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import group.aelysium.rustyconnector.core.lib.ReplyableCommand;
 import group.aelysium.rustyconnector.plugin.velocity.lib.players.Player;
 import group.aelysium.rustyconnector.toolkit.velocity.family.scalar_family.IRootFamily;
 import group.aelysium.rustyconnector.toolkit.velocity.util.DependencyInjector;
@@ -20,65 +21,56 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.server.MCLoader;
 import group.aelysium.rustyconnector.plugin.velocity.lib.server.ServerService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.incendo.cloud.annotations.Permission;
 
-public class CommandHub {
-    public static BrigadierCommand create(DependencyInjector.DI3<FamilyService, ServerService, HubService> dependencies) {
-        Tinder api = Tinder.get();
-        PluginLogger logger = api.logger();
+public class CommandHub extends ReplyableCommand {
+    @org.incendo.cloud.annotations.Command("hub")
+    @Permission("rustyconnector.command.hub")
+    public void asvejmuflcgxstne(com.velocitypowered.api.proxy.Player source) {
+        try {
+            HubService hubService = Tinder.get().services().dynamicTeleport().orElseThrow().services().hub().orElse(null);
+            if(hubService == null) {
+                reply(source, ProxyLang.UNKNOWN_COMMAND);
+                return;
+            }
 
-        FamilyService familyService = dependencies.d1();
-        ServerService serverService = dependencies.d2();
-        HubService hubService = dependencies.d3();
+            Player player = Player.from(source);
 
-        LiteralCommandNode<CommandSource> hub = LiteralArgumentBuilder
-                .<CommandSource>literal("hub")
-                .requires(source -> source instanceof com.velocitypowered.api.proxy.Player)
-                .executes(context -> {
-                    if(!(context.getSource() instanceof com.velocitypowered.api.proxy.Player eventPlayer)) {
-                        logger.log("/hub must be sent as a player!");
-                        return Command.SINGLE_SUCCESS;
-                    }
-                    Player player = Player.from(eventPlayer);
+            Family family = player.server().orElseThrow().family();
+            IRootFamily rootFamily = Tinder.get().services().family().rootFamily();
 
-                    Family family = player.server().orElseThrow().family();
-                    IRootFamily rootFamily = familyService.rootFamily();
+            if (!hubService.isEnabled(family.id())) {
+                reply(source, ProxyLang.UNKNOWN_COMMAND);
+                return;
+            }
 
-                    if(!hubService.isEnabled(family.id())) {
-                        context.getSource().sendMessage(ProxyLang.UNKNOWN_COMMAND);
-                        return Command.SINGLE_SUCCESS;
-                    }
+            if (!family.metadata().canBeAParentFamily())
+                // Attempt to connect to root family if the family isn't allowed to be a parent family.
+                try {
+                    rootFamily.connect(player);
+                    return;
+                } catch (RuntimeException err) {
+                    Tinder.get().logger().send(Component.text("Failed to connect player to parent family " + rootFamily.id() + "!", NamedTextColor.RED));
+                    reply(source, ProxyLang.HUB_CONNECTION_FAILED);
+                    return;
+                }
 
-                    if(!family.metadata().canBeAParentFamily()) {
-                        // Attempt to connect to root family if the family isn't allowed to be a parent family.
-                        try {
-                            rootFamily.connect(player);
-                            return Command.SINGLE_SUCCESS;
-                        } catch (RuntimeException err) {
-                            logger.send(Component.text("Failed to connect player to parent family " + rootFamily.id() + "!",NamedTextColor.RED));
-                            context.getSource().sendMessage(ProxyLang.HUB_CONNECTION_FAILED);
-                        }
+            try {
+                Family parent = family.parent();
 
-                        return Command.SINGLE_SUCCESS;
-                    }
+                if (parent != null) {
+                    parent.connect(player);
+                    return;
+                }
 
-                    try {
-                        Family parent = family.parent();
-
-                        if(parent != null) {
-                            parent.connect(player);
-                            return Command.SINGLE_SUCCESS;
-                        }
-
-                        rootFamily.connect(player);
-                    } catch (RuntimeException err) {
-                        logger.send(Component.text("Failed to connect player to parent family " + rootFamily.id() + "!",NamedTextColor.RED));
-                        context.getSource().sendMessage(ProxyLang.HUB_CONNECTION_FAILED);
-                    }
-
-                    return Command.SINGLE_SUCCESS;
-                })
-                .build();
-
-        return new BrigadierCommand(hub);
+                rootFamily.connect(player);
+            } catch (RuntimeException err) {
+                Tinder.get().logger().send(Component.text("Failed to connect player to parent family " + rootFamily.id() + "!", NamedTextColor.RED));
+                reply(source, ProxyLang.HUB_CONNECTION_FAILED);
+                return;
+            }
+        } catch (Exception e) {
+            reply(source, ProxyLang.INTERNAL_ERROR);
+        }
     }
 }

@@ -603,7 +603,6 @@ public class ProxyLang extends Lang {
             resolver().get("proxy.friends.unfriend.success", LanguageResolver.tagHandler("username", username));
     public final static ParameterizedMessage1<String> FRIEND_REQUEST_ALREADY_FRIENDS = (username) ->
             resolver().get("proxy.friends.request.already_friends", LanguageResolver.tagHandler("username", username));
-    public final static Component FRIEND_MESSAGING_NO_SELF_MESSAGING = resolver().get("proxy.friends.messaging.no_self_messaging");
     public final static Component FRIEND_MESSAGING_ONLY_FRIENDS = resolver().get("proxy.friends.messaging.only_friends");
     public final static Component FRIEND_MESSAGING_REPLY = text(resolver().getRaw("proxy.friends.messaging.reply"));
     public final static Component MAX_FRIENDS_REACHED = resolver().get("proxy.friends.max_friends_reached");
@@ -645,8 +644,6 @@ public class ProxyLang extends Lang {
     public final static Component NO_ONLINE_FRIENDS = resolver().get("proxy.friends.no_online_friends");
     public final static Component ONLINE_FRIENDS = resolver().get("proxy.friends.online_friends");
 
-    public final static Component UNFRIEND_USAGE = text(USAGE+": /unfriend <username>",RED);
-    public final static Component FM_USAGE = text(USAGE+": /fm <username> <message>",RED);
 
     public final static ParameterizedMessage1<String> PING = uuidOrDisplayName -> text(
             resolver().get("proxy.console_icons.ping") + " " + uuidOrDisplayName
