@@ -22,12 +22,29 @@
 #####################################################################################################
 #|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||#
 #####################################################################################################
-redis:
-    host: "0.0.0.0"
-    port: 3306
-    user: "default"
-    password: "password"
-    data-channel: "rustyConnector-sync"
+
+messenger:
+    provider: REDIS
+
+    available-providers:
+        REDIS:
+            host: "0.0.0.0"
+            port: 3306
+            user: "default"
+            password: "password"
+            data-channel: "rustyConnector-sync"
+        RABBIT_MQ:
+            host: "0.0.0.0"
+            port: 3306
+            user: "default"
+            password: "password"
+            data-channel: "rustyConnector-sync"
+        WEBSOCKET:
+            host: "0.0.0.0"
+            port: 3306
+            user: "default"
+            password: "password"
+            data-channel: "rustyConnector-sync"
 
 
 
@@ -48,7 +65,7 @@ storage:
 
 
 
-    additional-providers:
+    available-providers:
         MARIADB:
             host: "0.0.0.0"
             port: 3306
