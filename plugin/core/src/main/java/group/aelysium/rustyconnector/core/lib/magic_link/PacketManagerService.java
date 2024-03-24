@@ -13,12 +13,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class PacketManagerService<Flame extends IServiceableService<?>> implements IPacketManagerCore {
-    private final TimeoutCache<UUID, CompletableFuture<Packet>> packetsAwaitingReply;
+    private final TimeoutCache<UUID, Packet> packetsAwaitingReply;
     protected final Flame flame;
 
     public PacketManagerService(Flame flame) {
         this.packetsAwaitingReply = new TimeoutCache<>(LiquidTimestamp.from(10, TimeUnit.SECONDS));
-        this.packetsAwaitingReply.onTimeout(future -> future.completeExceptionally(new TimeoutException("A response wasn't made to this packet in time!")));
         this.flame = flame;
     }
 
@@ -26,7 +25,7 @@ public class PacketManagerService<Flame extends IServiceableService<?>> implemen
         return new Packet.Builder(this.flame);
     }
 
-    public Map<UUID, CompletableFuture<Packet>> activeReplyEndpoints() {
+    public Map<UUID, Packet> activeReplyEndpoints() {
         return this.packetsAwaitingReply;
     }
 

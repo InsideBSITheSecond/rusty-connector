@@ -430,29 +430,9 @@ class Initialize {
 
 
         DataTransitService dataTransitService = new DataTransitService(
-                dataTransitConfig.denylist_enabled(),
-                dataTransitConfig.whitelist_enabled(),
                 dataTransitConfig.maxPacketLength()
         );
         services.put(DataTransitService.class, dataTransitService);
-
-        if (dataTransitConfig.whitelist_enabled())
-            dataTransitConfig.whitelist_addresses().forEach(entry -> {
-                String[] addressSplit = entry.split(":");
-
-                InetSocketAddress address = new InetSocketAddress(addressSplit[0], Integer.parseInt(addressSplit[1]));
-
-                dataTransitService.whitelistAddress(address);
-            });
-
-        if (dataTransitConfig.denylist_enabled())
-            dataTransitConfig.denylist_addresses().forEach(entry -> {
-                String[] addressSplit = entry.split(":");
-
-                InetSocketAddress address = new InetSocketAddress(addressSplit[0], Integer.parseInt(addressSplit[1]));
-
-                dataTransitService.blacklistAddress(address);
-            });
 
         bootOutput.add(Component.text("Finished building data transit service.", NamedTextColor.GREEN));
 

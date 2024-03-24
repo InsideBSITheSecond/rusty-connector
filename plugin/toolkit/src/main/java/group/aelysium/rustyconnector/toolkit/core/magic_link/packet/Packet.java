@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public final class Packet implements JSONParseable {
     private static final int protocolVersion = 2;
@@ -24,7 +25,7 @@ public final class Packet implements JSONParseable {
     private final Target target;
     private final ResponseTarget responseTarget;
     private final Map<String, PacketParameter> parameters;
-    private final CompletableFuture<Packet> reply = new CompletableFuture<>();
+    private List<Consumer<Packet>> responseCallbacks = null; // Intentionally left null, if no responses are saved here, we don't want to bother instantiating a list here.
 
     public int messageVersion() { return this.messageVersion; }
     public Target sender() { return this.sender; }
@@ -44,8 +45,21 @@ public final class Packet implements JSONParseable {
     /**
      * Returns the packet which was sent as a reply to this one.
      */
-    public CompletableFuture<Packet> response() {
-        return this.reply;
+    public void response(Consumer<Packet> consumer) {
+        if(this.responseCallbacks == null) this.responseCallbacks = new ArrayList<>();
+        this.responseCallbacks.add(consumer);
+    }
+
+    /**
+     * Sends a packet as a response to this one.
+     * If the packet is found to not have a {@link ResponseTarget#remoteTarget()} that matches this packet's {@link ResponseTarget#ownTarget()} the request will be ignored.
+     * @param response The packet to be sent as a response to this one.
+     */
+    public void issueResponse(Packet response) {
+        if(this.responseCallbacks == null) return;
+        if(!this.responseTarget.ownTarget.equals(response.responseTarget.remoteTarget)) return;
+
+        this.responseCallbacks.forEach(c -> c.accept(response));
     }
 
     public Packet(@NotNull Integer version, @NotNull PacketIdentification identification, @NotNull Packet.Target sender, @NotNull Packet.Target target, @NotNull Packet.ResponseTarget responseTarget, @NotNull Map<String, PacketParameter> parameters) {
@@ -191,7 +205,7 @@ public final class Packet implements JSONParseable {
                 ICoreMagicLinkService magicLinkService = fetchMagicLink();
 
                 magicLinkService.connection().orElseThrow().publish(packet);
-                magicLinkService.packetManager().activeReplyEndpoints().put(packet.responseTarget().ownTarget(), packet.response());
+                magicLinkService.packetManager().activeReplyEndpoints().put(packet.responseTarget().ownTarget(), packet);
 
                 return packet;
             }
@@ -210,7 +224,7 @@ public final class Packet implements JSONParseable {
 
                 ICoreMagicLinkService magicLinkService = fetchMagicLink();
                 magicLinkService.connection().orElseThrow().publish(packet);
-                magicLinkService.packetManager().activeReplyEndpoints().put(packet.responseTarget().ownTarget(), packet.response());
+                magicLinkService.packetManager().activeReplyEndpoints().put(packet.responseTarget().ownTarget(), packet);
             }
         }
 
@@ -439,8 +453,8 @@ public final class Packet implements JSONParseable {
         public Packet packet() {
             return this.packet;
         }
-        public CompletableFuture<Packet> response() {
-            return this.packet.response();
+        public void response(Consumer<Packet> consumer) {
+            this.packet.response(consumer);
         }
 
         protected Wrapper(Packet packet) {

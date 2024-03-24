@@ -9,11 +9,11 @@ import java.util.concurrent.CompletableFuture;
 
 public interface IPacketManagerCore extends Service {
     /**
-     * Returns a map containing all active reply endpoints.
-     * These endpoints can be used to resolve waiting message responses.
+     * Returns a map containing all active reply packets.
+     * These packets can be used to send packet responses.
      * Don't mess with this if you don't know what it does!
      */
-    Map<UUID, CompletableFuture<Packet>> activeReplyEndpoints();
+    Map<UUID, Packet> activeReplyEndpoints();
 
     Packet.Builder newPacketBuilder();
 }
