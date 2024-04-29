@@ -16,5 +16,5 @@ public interface PluginLogger {
     void warn(String message, Throwable e);
     void error(String message);
     void error(String message, Throwable e);
-    void send(Component message);
+    void send(String message);
 }

@@ -15,6 +15,7 @@ import group.aelysium.rustyconnector.plugin.velocity.lib.load_balancing.RoundRob
 import group.aelysium.rustyconnector.plugin.velocity.lib.whitelist.Whitelist;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +45,8 @@ public class RootServerFamily extends ScalarServerFamily {
         }
 
         if(!scalarFamilyConfig.getParent_family().equals(""))
-            logger.send(VelocityLang.BOXED_MESSAGE_COLORED.build("The root family isn't allowed to have a parent family defined! Ignoring...", NamedTextColor.YELLOW));
+            logger.send(PlainTextComponentSerializer.plainText().serialize(
+                    VelocityLang.BOXED_MESSAGE_COLORED.build("The root family isn't allowed to have a parent family defined! Ignoring...", NamedTextColor.YELLOW)));
 
         switch (Enum.valueOf(AlgorithmType.class, scalarFamilyConfig.getLoadBalancing_algorithm())) {
             case ROUND_ROBIN -> {

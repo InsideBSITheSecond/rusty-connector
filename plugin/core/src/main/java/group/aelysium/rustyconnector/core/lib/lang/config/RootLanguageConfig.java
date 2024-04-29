@@ -5,6 +5,7 @@ import group.aelysium.rustyconnector.core.lib.config.YAML;
 import group.aelysium.rustyconnector.core.lib.exception.NoOutputException;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -19,7 +20,9 @@ public class RootLanguageConfig extends YAML {
     public String getLanguage() { return this.language; }
 
     public boolean generate(PluginLogger logger) throws Exception {
-        logger.send(Component.text("Building "+this.configPointer.getName()+"...", NamedTextColor.DARK_GRAY));
+        logger.send(PlainTextComponentSerializer.plainText().serialize(
+                Component.text("Building "+this.configPointer.getName()+"...", NamedTextColor.DARK_GRAY)
+        ));
         if (!this.configPointer.exists()) {
             File parent = this.configPointer.getParentFile();
             if (!parent.exists())
@@ -36,11 +39,13 @@ public class RootLanguageConfig extends YAML {
         try {
             this.data = this.loadYAML(this.configPointer);
             if(this.data == null) return false;
-            logger.send(Component.text("Finished building "+this.configPointer.getName(), NamedTextColor.GREEN));
+            logger.send(PlainTextComponentSerializer.plainText().serialize(
+                    Component.text("Finished building "+this.configPointer.getName(), NamedTextColor.GREEN)));
 
             return true;
         } catch (Exception e) {
-            logger.send(Component.text("Failed to build "+this.configPointer.getName(), NamedTextColor.RED));
+            logger.send(PlainTextComponentSerializer.plainText().serialize(
+                    Component.text("Failed to build "+this.configPointer.getName(), NamedTextColor.RED)));
 
             return false;
         }

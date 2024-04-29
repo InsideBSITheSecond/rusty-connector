@@ -8,6 +8,7 @@ import group.aelysium.rustyconnector.plugin.paper.central.Tinder;
 import group.aelysium.rustyconnector.plugin.paper.lib.magic_link.MagicLinkService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 public class MagicLink_PingResponseHandler extends PacketHandler {
     @Override
@@ -19,12 +20,14 @@ public class MagicLink_PingResponseHandler extends PacketHandler {
         MagicLinkService service = api.services().magicLink();
 
         if(packet.status() == ServerPingResponsePacket.PingResponseStatus.ACCEPTED) {
-            logger.send(Component.text(packet.message(), packet.color()));
+            logger.send(PlainTextComponentSerializer.plainText().serialize(
+                    Component.text(packet.message(), packet.color())));
 
             if(packet.pingInterval().isPresent()) {
                 service.setUpcomingPingDelay(packet.pingInterval().get());
             } else {
-                logger.send(Component.text("No ping interval was given during registration! Defaulting to 15 seconds!", NamedTextColor.YELLOW));
+                logger.send(PlainTextComponentSerializer.plainText().serialize(
+                        Component.text("No ping interval was given during registration! Defaulting to 15 seconds!", NamedTextColor.YELLOW)));
                 service.setUpcomingPingDelay(15);
             }
 
@@ -32,8 +35,10 @@ public class MagicLink_PingResponseHandler extends PacketHandler {
         }
 
         if(packet.status() == ServerPingResponsePacket.PingResponseStatus.DENIED) {
-            logger.send(Component.text(packet.message(), packet.color()));
-            logger.send(Component.text("Waiting 1 minute before trying again...", NamedTextColor.GRAY));
+            logger.send(PlainTextComponentSerializer.plainText().serialize(
+                    Component.text(packet.message(), packet.color())));
+            logger.send(PlainTextComponentSerializer.plainText().serialize(
+                    Component.text("Waiting 1 minute before trying again...", NamedTextColor.GRAY)));
             service.setUpcomingPingDelay(60);
             service.setStatus(MagicLinkService.Status.SEARCHING);
         }

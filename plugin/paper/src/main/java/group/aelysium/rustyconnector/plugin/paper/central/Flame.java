@@ -31,6 +31,7 @@ import group.aelysium.rustyconnector.plugin.paper.lib.services.PacketBuilderServ
 import group.aelysium.rustyconnector.plugin.paper.lib.services.ServerInfoService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 
@@ -203,7 +204,8 @@ class Initialize {
     }
 
     public RedisConnector connectors(AESCryptor cryptor, MessageCacheService cacheService, PluginLogger logger, LangService lang, InetSocketAddress originAddress) throws IOException {
-        logger.send(Component.text("Building Connectors...", NamedTextColor.DARK_GRAY));
+        logger.send(PlainTextComponentSerializer.plainText().serialize(
+                Component.text("Building Connectors...", NamedTextColor.DARK_GRAY)));
 
         ConnectorsConfig config = new ConnectorsConfig(new File(api.dataFolder(), "connectors.yml"));
         if (!config.generate(bootOutput, lang, LangFileMappings.PAPER_CONNECTORS_TEMPLATE))
@@ -229,19 +231,22 @@ class Initialize {
         handlers.put(PacketType.COORDINATE_REQUEST_QUEUE, new CoordinateRequestHandler());
         connection.startListening(cacheService, logger, handlers, originAddress);
 
-        logger.send(Component.text("Finished building Connectors.", NamedTextColor.GREEN));
+        logger.send(PlainTextComponentSerializer.plainText().serialize(
+                Component.text("Finished building Connectors.", NamedTextColor.GREEN)));
 
         return messenger;
     }
 
     public void magicLink(PacketBuilderService packetBuilderService) {
-        logger.send(Component.text("Building magic link service...", NamedTextColor.DARK_GRAY));
+        logger.send(PlainTextComponentSerializer.plainText().serialize(
+                Component.text("Building magic link service...", NamedTextColor.DARK_GRAY)));
 
         MagicLinkService magicLinkService = new MagicLinkService(3);
         services.put(MagicLinkService.class, magicLinkService);
         magicLinkService.startHeartbeat(packetBuilderService);
 
-        logger.send(Component.text("Finished booting magic link service.", NamedTextColor.GREEN));
+        logger.send(PlainTextComponentSerializer.plainText().serialize(
+                Component.text("Finished booting magic link service.", NamedTextColor.GREEN)));
     }
 
     public ServerInfoService serverInfo(DefaultConfig defaultConfig) {

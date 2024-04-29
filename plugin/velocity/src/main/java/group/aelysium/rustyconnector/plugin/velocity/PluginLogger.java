@@ -59,6 +59,10 @@ public class PluginLogger implements group.aelysium.rustyconnector.core.central.
         logger.error(message, e);
     }
 
+    public void send(String message) {
+
+    }
+
     public void send(Component message) {
         try {
             Tinder.get().velocityServer().getConsoleCommandSource().sendMessage(message);

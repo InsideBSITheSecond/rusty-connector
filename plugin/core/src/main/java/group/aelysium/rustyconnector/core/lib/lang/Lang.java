@@ -3,6 +3,7 @@ package group.aelysium.rustyconnector.core.lib.lang;
 import group.aelysium.rustyconnector.core.central.PluginLogger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import static net.kyori.adventure.text.Component.*;
 import static net.kyori.adventure.text.JoinConfiguration.newlines;
@@ -15,12 +16,12 @@ public class Lang {
         Component build();
 
         default void send(PluginLogger sender) {
-            sender.send(
+            sender.send(PlainTextComponentSerializer.plainText().serialize(
                     join(
                             newlines(),
                             text(attachedWordmark),
                             build()
-                    )
+                    ))
             );
         }
     }
@@ -28,12 +29,12 @@ public class Lang {
         Component build(A1 arg1);
 
         default void send(PluginLogger sender, A1 arg1) {
-            sender.send(
+            sender.send(PlainTextComponentSerializer.plainText().serialize(
                     join(
                             JoinConfiguration.separator(newline()),
                             text(attachedWordmark),
                             build(arg1)
-                    )
+                    ))
             );
         }
     }
@@ -41,12 +42,12 @@ public class Lang {
         Component build(A1 arg1, A2 arg2);
 
         default void send(PluginLogger sender, A1 arg1, A2 arg2) {
-            sender.send(
+            sender.send(PlainTextComponentSerializer.plainText().serialize(
                     join(
                             newlines(),
                             text(attachedWordmark),
                             build(arg1, arg2)
-                    )
+                    ))
             );
         }
     }
@@ -54,12 +55,12 @@ public class Lang {
         Component build(A1 arg1, A2 arg2, A3 arg3);
 
         default void send(PluginLogger sender, A1 arg1, A2 arg2, A3 arg3) {
-            sender.send(
+            sender.send(PlainTextComponentSerializer.plainText().serialize(
                     join(
                             newlines(),
                             text(attachedWordmark),
                             build(arg1, arg2, arg3)
-                    )
+                    ))
             );
         }
     }
@@ -67,12 +68,12 @@ public class Lang {
         Component build(A1 arg1, A2 arg2, A3 arg3, A4 arg4);
 
         default void send(PluginLogger sender, A1 arg1, A2 arg2, A3 arg3, A4 arg4) {
-            sender.send(
+            sender.send(PlainTextComponentSerializer.plainText().serialize(
                     join(
                             newlines(),
                             text(attachedWordmark),
                             build(arg1, arg2, arg3, arg4)
-                    )
+                    ))
             );
         }
     }

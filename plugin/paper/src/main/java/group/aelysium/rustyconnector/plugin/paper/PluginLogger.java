@@ -57,7 +57,7 @@ public class PluginLogger implements group.aelysium.rustyconnector.core.central.
     }
 
     @Override
-    public void send(Component message) {
+    public void send(String message) {
         try {
             Tinder.get().paperServer().getConsoleSender().sendMessage(message);
         } catch (Exception ignore) {}
