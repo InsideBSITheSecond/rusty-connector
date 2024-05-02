@@ -237,7 +237,7 @@ public class PlayerServer implements group.aelysium.rustyconnector.core.lib.mode
     public boolean directConnect(Player player) throws ConnectException {
         ConnectionRequestBuilder connection = player.createConnectionRequest(this.registeredServer());
         try {
-            ConnectionRequestBuilder.Result result = connection.connect().orTimeout(5, TimeUnit.SECONDS).get();
+            ConnectionRequestBuilder.Result result = connection.connect().orTimeout(60, TimeUnit.SECONDS).get();
 
             if(result.isSuccessful()) {
                 this.playerJoined();
